@@ -1,0 +1,40 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${DB_USER}"]
+      interval: 10s 
+      timeout: 5s 
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  fileshare:
+    build:
+      context: ./fileshare 
+      dockerfile: Dockerfile
+    depends_on:
+      - server
+
+  admin:
+    build:
+      context: ./admin 
+      dockerfile: Dockerfile
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: ./server 
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+
+  # TODO: add a elasticsearch node or similar for logging events
+  # NOTE: not using elasticsearch node becuz under the hood it uses ubuntu and is very heavy
+volumes:
+  pgdata:
