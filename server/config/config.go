@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	Host string `toml:"host"`
-	Port int16  `toml:"port"`
-	Prod bool   `toml:"production"`
+	Host      string `toml:"host"`
+	Port      int16  `toml:"port"`
+	Prod      bool   `toml:"production"`
+	JwtSecret string `toml:"jwt-secret"`
 }
 
 func LoadConfig(path string) (Config, error) {
