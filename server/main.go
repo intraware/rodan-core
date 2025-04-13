@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/rocvitc/hackvault/server/api"
 	"github.com/rocvitc/hackvault/server/config"
@@ -26,6 +28,16 @@ func main() {
 	}
 	r := gin.New()
 	r.Use(middleware.Logger())
+	r.Use(cors.New(cors.Config{
+		AllowOriginFunc: func(origin string) bool {
+			return !cfg.Prod || origin == cfg.CORS
+		},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization", "Accept", "X-Requested-With"},
+		AllowCredentials: true,
+		MaxAge:           4 * time.Hour,
+	}))
+
 	r.Use(gin.Recovery())
 	api.LoadRoutes(r)
 	fmt.Printf("[ENGINE] Server started at %s:%d\n", cfg.Host, cfg.Port)

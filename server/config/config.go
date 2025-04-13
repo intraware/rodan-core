@@ -11,6 +11,7 @@ type Config struct {
 	Port      int16  `toml:"port"`
 	Prod      bool   `toml:"production"`
 	JwtSecret string `toml:"jwt-secret"`
+	CORS      string `toml:"cors-url"`
 }
 
 func LoadConfig(path string) (Config, error) {
