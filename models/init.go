@@ -3,12 +3,13 @@
 package models
 
 import (
-	"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	// importing models
 	"server/models"

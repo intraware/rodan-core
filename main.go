@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/intraware/rodan/server/api"
-	"github.com/intraware/rodan/server/config"
-	"github.com/intraware/rodan/server/utils"
-	"github.com/intraware/rodan/server/utils/middleware"
+	"github.com/intraware/rodan/api"
+	"github.com/intraware/rodan/config"
+	"github.com/intraware/rodan/utils"
+	"github.com/intraware/rodan/utils/middleware"
 )
 
 func main() {
