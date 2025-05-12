@@ -1,6 +1,6 @@
-module roden
+module github.com/intraware/rodan
 
-go 1.24.3
+go 1.24.1
 
 require (
 	github.com/BurntSushi/toml v1.5.0
