@@ -1,8 +1,8 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
+// import (
+// 	"gorm.io/gorm"
+// )
 
 type StaticChallenge struct {
 	ID 	  int    `json:"id" gorm:"unique;index"`

@@ -9,6 +9,9 @@ import (
 	"log"
 	"os"
 	"time"
+
+	// importing models
+	"server/models"
 )
 
 func InitDB() {
@@ -46,7 +49,7 @@ func InitDB() {
 	}
 
 	// Add tables here ...
-	err = db.AutoMigrate(&models.user{}, &models.team{}, &models.StaticChallenge{}, &models.DynamicChallenge{})
+	err = db.AutoMigrate(&models.user{}, &models.team{}, &models.StaticChallenge{}, &models.DynamicChallenge{}, &models.Container{}, &models.Solve{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
