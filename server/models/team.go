@@ -1,8 +1,8 @@
 package models
 
-import {
+import (
 	"gorm.io/gorm"
-}
+)
 
 type Team struct {
 	ID        int    `json:"id" gorm:"unique;index"`
