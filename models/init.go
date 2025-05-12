@@ -10,6 +10,12 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"os"
+	"time"
+
+	// importing models
+	// "server/models"
 )
 
 func InitDB() {
