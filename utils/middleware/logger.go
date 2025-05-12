@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rocvitc/hackvault/server/utils"
+	// "github.com/rocvitc/hackvault/server/utils"
 	"github.com/sirupsen/logrus"
 )
 

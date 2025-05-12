@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/rocvitc/hackvault/server/api"
-	"github.com/rocvitc/hackvault/server/config"
-	"github.com/rocvitc/hackvault/server/utils"
-	"github.com/rocvitc/hackvault/server/utils/middleware"
+	// "github.com/rocvitc/hackvault/server/api"
+	// "github.com/rocvitc/hackvault/server/config"
+	// "github.com/rocvitc/hackvault/server/utils"
+	// "github.com/rocvitc/hackvault/server/utils/middleware"
 )
 
 func main() {
