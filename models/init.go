@@ -10,9 +10,6 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	// importing models
-	"server/models"
 )
 
 func InitDB() {
@@ -50,7 +47,7 @@ func InitDB() {
 	}
 
 	// Add tables here ...
-	err = db.AutoMigrate(&models.user{}, &models.team{}, &models.StaticChallenge{}, &models.DynamicChallenge{}, &models.Container{}, &models.Solve{})
+	err = db.AutoMigrate(&User{}, &Team{}, &StaticChallenge{}, &DynamicChallenge{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
