@@ -8,11 +8,9 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	// importing models
-	"server/models"
 )
 
 func InitDB() {
@@ -25,10 +23,10 @@ func InitDB() {
 	// Get db URL from env vars
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		log.Fatalf("DATABASE_URL environment variable not set")
+		logrus.Fatalf("DATABASE_URL environment variable not set")
 	}
 
-	log.Printf("Connecting to database using DATABASE_URL")
+	logrus.Printf("Connecting to database using DATABASE_URL")
 
 	// Connecting to db
 	var db *gorm.DB
@@ -38,7 +36,7 @@ func InitDB() {
 		if err == nil {
 			break
 		}
-		log.Printf("Failed to connect to database (attempt %d/%d): %v", i+1, maxRetries, err)
+		logrus.Printf("Failed to connect to database (attempt %d/%d): %v", i+1, maxRetries, err)
 		if i < maxRetries-1 {
 			log.Println("Retrying in 5 seconds...")
 			time.Sleep(5 * time.Second)
@@ -46,14 +44,13 @@ func InitDB() {
 	}
 
 	if err != nil {
-		log.Fatalf("Failed to connect to database after %d attempts: %v", maxRetries, err)
+		logrus.Fatalf("Failed to connect to database after %d attempts: %v", maxRetries, err)
 	}
 
 	// Add tables here ...
-	err = db.AutoMigrate(&models.user{}, &models.team{}, &models.StaticChallenge{}, &models.DynamicChallenge{}, &models.Container{}, &models.Solve{})
-	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+	if err := db.AutoMigrate(&User{}, &Team{}, &StaticChallenge{}, &DynamicChallenge{}, &Container{}, &Solve{}); err != nil {
+		logrus.Fatalf("Failed to migrate database: %v", err)
 	}
 
-	log.Println("Database initialized successfully")
+	logrus.Println("Database initialized successfully")
 }
