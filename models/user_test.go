@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var db *gorm.DB
@@ -22,8 +23,8 @@ func TestMain(m *testing.M) {
 	}
 	var err error
 	db, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{
-		TranslateError: true,
-		//Logger:                                   logger.Default.LogMode(logger.Info),
+		TranslateError:                           true,
+		Logger:                                   logger.Default.LogMode(logger.Info),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {

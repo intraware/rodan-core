@@ -95,7 +95,7 @@ func (u *User) BeforeDelete(tx *gorm.DB) (err error) {
     UPDATE teams 
     SET leader_id = (
         SELECT id FROM users 
-        WHERE team_id = ? AND id != ? 
+        WHERE team_id = ? AND id != ? AND deleted_at IS NULL
         ORDER BY created_at LIMIT 1
     ) 
     WHERE id = ?`,
