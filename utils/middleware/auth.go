@@ -1,0 +1,40 @@
+package middleware
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/intraware/rodan/config"
+	"github.com/intraware/rodan/utils"
+)
+
+func AuthRequired() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		authHeader := ctx.GetHeader("Authorization")
+		if authHeader == "" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+			ctx.Abort()
+			return
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenString == authHeader {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer token required"})
+			ctx.Abort()
+			return
+		}
+
+		cfg, _ := config.LoadConfig("./config.toml")
+		claims, err := utils.ValidateJWT(tokenString, cfg.JwtSecret)
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			ctx.Abort()
+			return
+		}
+
+		ctx.Set("user_id", claims.UserID)
+		ctx.Set("username", claims.Username)
+		ctx.Next()
+	}
+}

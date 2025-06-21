@@ -4,7 +4,7 @@ import "github.com/gin-gonic/gin"
 
 func LoadRoutes(r *gin.Engine) {
 	apiRouter := r.Group("/api")
-	LoadAuth(apiRouter)
+	// LoadAuth(apiRouter)
 	LoadLeaderBoard(apiRouter)
 	LoadNotification(apiRouter)
 	LoadChallenges(apiRouter)

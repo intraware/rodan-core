@@ -7,11 +7,12 @@ import (
 )
 
 type Config struct {
-	Host      string `toml:"host"`
-	Port      int16  `toml:"port"`
-	Prod      bool   `toml:"production"`
-	JwtSecret string `toml:"jwt-secret"`
-	CORS      string `toml:"cors-url"`
+	Host                   string `toml:"host"`
+	Port                   int16  `toml:"port"`
+	Prod                   bool   `toml:"production"`
+	JwtSecret              string `toml:"jwt-secret"`
+	CORS                   string `toml:"cors-url"`
+	TeamCodeRefreshMinutes int    `toml:"team-code-refresh-minutes"`
 }
 
 func LoadConfig(path string) (Config, error) {

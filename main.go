@@ -6,12 +6,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	// "github.com/rocvitc/hackvault/server/api"
-	// "github.com/rocvitc/hackvault/server/config"
-	// "github.com/rocvitc/hackvault/server/utils"
-	// "github.com/rocvitc/hackvault/server/utils/middleware"
-
-	// "server/models"
+	"github.com/intraware/rodan/api"
+	"github.com/intraware/rodan/config"
+	"github.com/intraware/rodan/models"
+	"github.com/intraware/rodan/utils"
+	"github.com/intraware/rodan/utils/middleware"
 )
 
 func main() {
@@ -22,6 +21,10 @@ func main() {
 	} else {
 		cfg = config
 	}
+
+	// Initialize the database first
+	models.InitDB()
+
 	utils.NewLogger(cfg.Prod)
 	if cfg.Prod {
 		gin.SetMode(gin.ReleaseMode)
@@ -44,7 +47,4 @@ func main() {
 	api.LoadRoutes(r)
 	fmt.Printf("[ENGINE] Server started at %s:%d\n", cfg.Host, cfg.Port)
 	r.Run(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))
-
-	// Initialize the database
-	models.InitDB()
 }

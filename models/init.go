@@ -1,5 +1,3 @@
-// TODO: here ..if prod is false .. use sqlite with debug mode on .. else no debug mode ..
-
 package models
 
 import (
@@ -12,6 +10,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+var DB *gorm.DB
 
 func InitDB() {
 	// Load .env vars
@@ -29,10 +29,9 @@ func InitDB() {
 	logrus.Printf("Connecting to database using DATABASE_URL")
 
 	// Connecting to db
-	var db *gorm.DB
 	maxRetries := 5
 	for i := 0; i < maxRetries; i++ {
-		db, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+		DB, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 		if err == nil {
 			break
 		}
@@ -48,7 +47,7 @@ func InitDB() {
 	}
 
 	// Add tables here ...
-	if err := db.AutoMigrate(&User{}, &Team{}, &StaticChallenge{}, &DynamicChallenge{}, &Container{}, &Solve{}); err != nil {
+	if err := DB.AutoMigrate(&User{}, &Team{}, &StaticChallenge{}, &DynamicChallenge{}, &Container{}, &Solve{}); err != nil {
 		logrus.Fatalf("Failed to migrate database: %v", err)
 	}
 

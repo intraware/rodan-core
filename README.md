@@ -29,3 +29,11 @@ HackVault aims to be a highly efficient backend for CTF (Capture The Flag) platf
 > Some of the services in this project are tightly coupled. The recommended way to run everything is via Docker Compose, which ensures proper coordination between services.  
 >  
 > If you prefer running services individually on your local environment, be aware that some components might break or not function as expected without the full stack.
+
+ 
+ ---
+
+## TO-DO
+- [ ] add a query and response summary for all endpoints, some kind of swagger docs or just a routes.md
+### User
+- [ ] add forgot password
