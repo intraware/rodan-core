@@ -60,3 +60,19 @@ type ChallengeDetail struct {
 	PointsMax  int      `json:"points_max"`
 	Links      []string `json:"links,omitempty"`
 }
+
+type ContainerResponse struct {
+	Flag  string   `json:"flag"`
+	Ports []int    `json:"ports"`
+	Links []string `json:"links"`
+}
+
+type SubmitFlagRequest struct {
+	Flag string `json:"flag" binding:"required"`
+}
+
+type SubmitFlagResponse struct {
+	Correct bool   `json:"correct"`
+	Points  int    `json:"points"`
+	Message string `json:"message"`
+}

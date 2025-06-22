@@ -11,6 +11,7 @@ import (
 	"github.com/intraware/rodan/models"
 	"github.com/intraware/rodan/utils"
 	"github.com/intraware/rodan/utils/middleware"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -24,6 +25,15 @@ func main() {
 
 	// Initialize the database first
 	models.InitDB()
+
+	// Initialize and start cleanup service
+	cleanupService, err := utils.NewCleanupService()
+	if err != nil {
+		logrus.Warnf("Failed to initialize cleanup service: %v", err)
+	} else {
+		cleanupService.StartCleanupRoutine()
+		defer cleanupService.Close()
+	}
 
 	utils.NewLogger(cfg.Prod)
 	if cfg.Prod {

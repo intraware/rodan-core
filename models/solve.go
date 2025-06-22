@@ -1,9 +1,5 @@
 package models
 
-// import (
-// 	"gorm.io/gorm"
-// )
-
 type Solve struct {
 	TeamID        int   `json:"team_id" gorm:"index"`
 	ChallengeID   int   `json:"challenge_id" gorm:"index"`

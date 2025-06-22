@@ -34,6 +34,15 @@ HackVault aims to be a highly efficient backend for CTF (Capture The Flag) platf
  ---
 
 ## TO-DO
+- A lot
+- [x] connect docker API
+- [ ] correct and optimise all the request and response json
 - [ ] add a query and response summary for all endpoints, some kind of swagger docs or just a routes.md
-### User
-- [ ] add forgot password
+- [ ] implement leaderboard sort from backend
+- [ ] implement cache
+- [ ] add forgot password for user
+- [ ] change the code change for team logic
+- [ ] add the points function (dynamic)
+- [ ] implement notifications (SSE)
+- [ ] admin panel (admin & sudo admin)
+- [ ] add text files checking if things go kaboom
