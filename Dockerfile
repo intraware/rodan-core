@@ -1,15 +1,24 @@
-FROM golang:1.24-alpine AS builder
-RUN apk add --no-cache wget
-RUN wget https://packages.timber.io/vector/0.37.0/vector-x86_64-unknown-linux-musl.tar.gz \
-  && tar -xzf vector-x86_64-unknown-linux-musl.tar.gz \
-  && mv vector-x86_64-unknown-linux-musl/bin/vector /usr/local/bin/
-WORKDIR /app
-COPY . .
-ENV CGO_ENABLED=0
-RUN go build -ldflags="-s -w" -o server
+FROM golang:1.24.1-alpine AS builder
+RUN apk add --no-cache git ca-certificates
 
-FROM alpine:latest AS runtime
-COPY --from=builder /app/server /root/server
-COPY ./config.toml /root/config.toml
-COPY --from=builder /usr/local/bin/vector /usr/local/bin/vector
-CMD ["/root/server"]
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o rodan .
+
+
+FROM alpine:latest AS runner
+RUN apk --no-cache add ca-certificates docker-cli
+
+WORKDIR /app
+COPY --from=builder /app/rodan .
+COPY --from=builder /app/sample.config.toml ./config.toml
+
+EXPOSE 8000
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8000/ping || exit 1
+
+CMD ["./rodan"]

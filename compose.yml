@@ -1,4 +1,16 @@
 services:
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # image: ghcr.io/intraware/rodan:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./rodan:/app
+
   database:
     image: postgres:17-alpine
     environment:
@@ -13,28 +25,5 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  fileshare:
-    build:
-      context: ./fileshare 
-      dockerfile: Dockerfile
-    depends_on:
-      - server
-
-  admin:
-    build:
-      context: ./admin 
-      dockerfile: Dockerfile
-    depends_on:
-      - server
-
-  server:
-    build:
-      context: ./server 
-      dockerfile: Dockerfile
-    depends_on:
-      - database
-
-  # TODO: add a elasticsearch node or similar for logging events
-  # NOTE: not using elasticsearch node becuz under the hood it uses ubuntu and is very heavy
 volumes:
   pgdata:

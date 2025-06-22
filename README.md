@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>HackVault</h1>
+  <h1>Rodan</h1>
   <p><strong>A highly optimized CTF platform backend written in Go</strong></p>
 </div>
 
@@ -11,7 +11,7 @@
 ## Table of Contents
 - [Introduction](#introduction)
 - [Requirements](#requirements)
-
+- [To-Do](#to-do)
 ---
 
 ## Introduction
@@ -33,7 +33,7 @@ HackVault aims to be a highly efficient backend for CTF (Capture The Flag) platf
  
  ---
 
-## TO-DO
+## To-Do
 - A lot
 - [x] connect docker API
 - [ ] correct and optimise all the request and response json
