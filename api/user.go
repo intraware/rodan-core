@@ -18,10 +18,8 @@ func LoadUser(r *gin.RouterGroup) {
 	userRouter.POST("/login", login)
 	userRouter.POST("/forgot-password", forgotPassword)
 
-	// Protected routes
-	protected := userRouter.Group("")
-	protected.Use(middleware.AuthRequired())
-	protected.GET("/me", getMyProfile)
+	// Protected routes - middleware applied directly to endpoints
+	userRouter.GET("/me", middleware.AuthRequired(), getMyProfile)
 
 	// Public routes
 	userRouter.GET("/:id", getUserProfile)

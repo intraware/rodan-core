@@ -47,7 +47,7 @@ func InitDB() {
 	}
 
 	// Add tables here ...
-	if err := DB.AutoMigrate(&User{}, &Team{}, &StaticChallenge{}, &DynamicChallenge{}, &Container{}, &Solve{}); err != nil {
+	if err := DB.AutoMigrate(&User{}, &Team{}, &Challenge{}, &Container{}, &Solve{}); err != nil {
 		logrus.Fatalf("Failed to migrate database: %v", err)
 	}
 

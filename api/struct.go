@@ -44,3 +44,19 @@ type TeamResponse struct {
 	LeaderID int        `json:"leader_id"`
 	Members  []UserInfo `json:"members"`
 }
+
+type ChallengeListItem struct {
+	ID    int    `json:"id"`
+	Title string `json:"title"`
+}
+
+type ChallengeDetail struct {
+	ID         int      `json:"id"`
+	Name       string   `json:"name"`
+	Desc       string   `json:"desc"`
+	Category   int8     `json:"category"`
+	Difficulty int8     `json:"difficulty"`
+	PointsMin  int      `json:"points_min"`
+	PointsMax  int      `json:"points_max"`
+	Links      []string `json:"links,omitempty"`
+}

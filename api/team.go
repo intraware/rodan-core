@@ -17,12 +17,10 @@ func LoadTeam(r *gin.RouterGroup) {
 	// Public routes
 	teamRouter.GET("/:id", getTeam)
 
-	// Protected routes
-	protected := teamRouter.Group("")
-	protected.Use(middleware.AuthRequired())
-	protected.POST("/create", createTeam)
-	protected.POST("/join", joinTeam)
-	protected.GET("/me", getMyTeam)
+	// Protected routes - middleware applied directly to endpoints
+	teamRouter.POST("/create", middleware.AuthRequired(), createTeam)
+	teamRouter.POST("/join", middleware.AuthRequired(), joinTeam)
+	teamRouter.GET("/me", middleware.AuthRequired(), getMyTeam)
 }
 
 func createTeam(ctx *gin.Context) {
