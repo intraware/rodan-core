@@ -1,10 +1,9 @@
 package models
 
-// import (
-// 	"gorm.io/gorm"
-// )
+import "gorm.io/gorm"
 
 type Container struct {
+	gorm.Model
 	TeamID      int      `json:"team_id" gorm:"index"`
 	ChallengeID int      `json:"challenge_id" gorm:"index"`
 	ContainerID string   `json:"container_id" gorm:"unique"` // Docker container ID

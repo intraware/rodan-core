@@ -14,8 +14,8 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	"github.com/intraware/rodan/config"
 	"github.com/intraware/rodan/models"
+	"github.com/intraware/rodan/utils/values"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,15 +45,10 @@ func NewDockerService() (*DockerService, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Docker client: %v", err)
 	}
-
-	cfg, err := config.LoadConfig("./config.toml")
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %v", err)
-	}
-
+	cfg := values.GetConfig()
 	// Parse port ranges from config
 	portRanges := []PortRange{
-		{Start: cfg.ContainerPortRangeStart, End: cfg.ContainerPortRangeEnd},
+		{Start: cfg.Docker.PortRange.Start, End: cfg.Docker.PortRange.End},
 	}
 
 	return &DockerService{
@@ -134,10 +129,10 @@ func (ds *DockerService) CreateContainer(challengeID, teamID int, imageName stri
 	}
 
 	// Generate links
-	cfg, _ := config.LoadConfig("./config.toml")
+	cfg := values.GetConfig()
 	links := make([]string, len(hostPorts))
 	for i, port := range hostPorts {
-		links[i] = fmt.Sprintf("http://%s:%d", cfg.Host, port)
+		links[i] = fmt.Sprintf("http://%s:%d", cfg.Server.Host, port)
 	}
 
 	logrus.Infof("Created container %s for challenge %d team %d", resp.ID[:12], challengeID, teamID)

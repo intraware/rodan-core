@@ -1,4 +1,4 @@
-package api
+package user
 
 import (
 	"net/http"
@@ -8,22 +8,8 @@ import (
 	"github.com/intraware/rodan/config"
 	"github.com/intraware/rodan/models"
 	"github.com/intraware/rodan/utils"
-	"github.com/intraware/rodan/utils/middleware"
 	"gorm.io/gorm"
 )
-
-func LoadUser(r *gin.RouterGroup) {
-	userRouter := r.Group("/user")
-	userRouter.POST("/signup", signUp)
-	userRouter.POST("/login", login)
-	userRouter.POST("/forgot-password", forgotPassword)
-
-	// Protected routes - middleware applied directly to endpoints
-	userRouter.GET("/me", middleware.AuthRequired(), getMyProfile)
-
-	// Public routes
-	userRouter.GET("/:id", getUserProfile)
-}
 
 func signUp(ctx *gin.Context) {
 	var req SignUpRequest

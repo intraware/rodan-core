@@ -1,9 +1,25 @@
-host="127.0.0.1"
-port=8000
-production=false
-jwt-secret="testing"
-flag-secret="super-secret-flag-key"
-cors-url="*"
-team-code-refresh-minutes=30
-container-port-range-start=40000
-container-port-range-end=45000
+[server]
+host = "127.0.0.1"
+port = 8000
+production = false
+cors-url = ["*"]
+
+[security]
+jwt-secret = "testing"
+flag-secret = "super-secret-flag-key"
+
+[docker]
+socket-url = "unix:///var/run/docker.sock" 
+port-range = { start = 40000, end = 45000 }
+
+[database]
+host = "localhost"
+port = 5432
+username = "your_db_user"
+password = "your_db_password"
+database-name = "your_database"
+ssl-mode = "disable" 
+
+[app]
+team-code-refresh-minutes = 30
+enable-leaderboard = { user=true, team=true}

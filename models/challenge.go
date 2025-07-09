@@ -1,6 +1,9 @@
 package models
 
+import "gorm.io/gorm"
+
 type Challenge struct {
+	gorm.Model
 	ID           int      `json:"id" gorm:"unique;index"`
 	Name         string   `json:"name"`
 	Desc         string   `json:"desc"`

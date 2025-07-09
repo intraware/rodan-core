@@ -12,7 +12,6 @@ var Logger *logrus.Logger
 func NewLogger(production bool) {
 	logger := logrus.New()
 	logger.Out = os.Stdout
-
 	if production {
 		logger.SetFormatter(&logrus.JSONFormatter{
 			TimestampFormat: time.RFC3339,

@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
-	"time"
 
 	"golang.org/x/crypto/argon2"
 	"gorm.io/gorm"
@@ -22,15 +21,14 @@ const (
 
 type User struct {
 	gorm.Model
-	ID             int       `json:"id" gorm:"primaryKey"`
-	Username       string    `json:"username" gorm:"unique"`
-	Password       string    `json:"password"`
-	Email          string    `json:"email"`
-	GitHubUsername string    `json:"github_username" gorm:"column:github_username;unique"`
-	Ban            bool      `json:"ban" gorm:"default:false"`
-	CreatedAt      time.Time `json:"created_at"`
-	TeamID         *int      `json:"team_id" gorm:"column:team_id"`
-	Team           *Team     `json:"team" gorm:"foreignKey:TeamID"`
+	ID             int    `json:"id" gorm:"primaryKey"`
+	Username       string `json:"username" gorm:"unique"`
+	Password       string `json:"password"`
+	Email          string `json:"email"`
+	GitHubUsername string `json:"github_username" gorm:"column:github_username;unique"`
+	Ban            bool   `json:"ban" gorm:"default:false"`
+	TeamID         *int   `json:"team_id" gorm:"column:team_id"`
+	Team           *Team  `json:"team" gorm:"foreignKey:TeamID"`
 }
 
 func (User) TableName() string {
@@ -47,7 +45,6 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	b64Hash := base64.RawStdEncoding.EncodeToString(hash)
 	encoded := fmt.Sprintf("$argon2id$v=19$t=%d$m=%d$p=%d%s%s", timeCost, memoryCost, parallelism, b64Salt, b64Hash)
 	u.Password = encoded
-	u.CreatedAt = time.Now()
 	return nil
 }
 

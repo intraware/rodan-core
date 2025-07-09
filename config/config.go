@@ -7,15 +7,52 @@ import (
 )
 
 type Config struct {
-	Host                    string `toml:"host"`
-	Port                    int16  `toml:"port"`
-	Prod                    bool   `toml:"production"`
-	JwtSecret               string `toml:"jwt-secret"`
-	FlagSecret              string `toml:"flag-secret"`
-	CORS                    string `toml:"cors-url"`
-	TeamCodeRefreshMinutes  int    `toml:"team-code-refresh-minutes"`
-	ContainerPortRangeStart int    `toml:"container-port-range-start"`
-	ContainerPortRangeEnd   int    `toml:"container-port-range-end"`
+	Server   ServerConfig   `toml:"server"`
+	Security SecurityConfig `toml:"security"`
+	Docker   DockerConfig   `toml:"docker"`
+	Database DatabaseConfig `toml:"database"`
+	App      AppConfig      `toml:"app"`
+}
+
+type ServerConfig struct {
+	Host       string   `toml:"host"`
+	Port       int      `toml:"port"`
+	Production bool     `toml:"production"`
+	CORSURL    []string `toml:"cors-url"`
+}
+
+type SecurityConfig struct {
+	JWTSecret  string `toml:"jwt-secret"`
+	FlagSecret string `toml:"flag-secret"`
+}
+
+type DockerConfig struct {
+	SocketURL string          `toml:"socket-url"`
+	PortRange DockerPortRange `toml:"port-range"`
+}
+
+type DockerPortRange struct {
+	Start int `toml:"start"`
+	End   int `toml:"end"`
+}
+
+type DatabaseConfig struct {
+	Host         string `toml:"host"`
+	Port         int    `toml:"port"`
+	Username     string `toml:"username"`
+	Password     string `toml:"password"`
+	DatabaseName string `toml:"database-name"`
+	SSLMode      string `toml:"ssl-mode"`
+}
+
+type AppConfig struct {
+	TeamCodeRefreshMinutes int               `toml:"team-code-refresh-minutes"`
+	EnableLeaderboard      LeaderboardConfig `toml:"enable-leaderboard"`
+}
+
+type LeaderboardConfig struct {
+	User bool `toml:"user"`
+	Team bool `toml:"team"`
 }
 
 func LoadConfig(path string) (Config, error) {
