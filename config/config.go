@@ -48,6 +48,8 @@ type DatabaseConfig struct {
 type AppConfig struct {
 	TeamCodeRefreshMinutes int               `toml:"team-code-refresh-minutes"`
 	EnableLeaderboard      LeaderboardConfig `toml:"enable-leaderboard"`
+	TokenExpiry            int               `toml:"token-expiry"`
+	TOTPIssuer             string            `toml:"totp-issuer"`
 }
 
 type LeaderboardConfig struct {
