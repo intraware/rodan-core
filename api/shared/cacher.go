@@ -1,0 +1,22 @@
+package shared
+
+import (
+	"time"
+
+	"github.com/AnimeKaizoku/cacher"
+	"github.com/intraware/rodan/models"
+)
+
+var UserCache = cacher.NewCacher[int, models.User](&cacher.NewCacherOpts{
+	TimeToLive:    time.Minute * 3,
+	CleanInterval: time.Hour * 2,
+	CleanerMode:   cacher.CleaningCentral,
+	Revaluate:     true,
+})
+
+var TeamCache = cacher.NewCacher[int, models.Team](&cacher.NewCacherOpts{
+	TimeToLive:    time.Minute * 3,
+	CleanInterval: time.Hour * 2,
+	CleanerMode:   cacher.CleaningCentral,
+	Revaluate:     true,
+})

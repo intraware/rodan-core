@@ -18,9 +18,10 @@ import (
 )
 
 var LoginCache = cacher.NewCacher[string, models.User](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 3,
+	TimeToLive:    time.Minute * 2,
 	CleanInterval: time.Hour * 1,
 	CleanerMode:   cacher.CleaningCentral,
+	Revaluate:     true,
 })
 
 func signUp(ctx *gin.Context) {

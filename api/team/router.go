@@ -13,6 +13,9 @@ func LoadTeam(r *gin.RouterGroup) {
 
 	// Protected routes - middleware applied directly to endpoints
 	teamRouter.POST("/create", middleware.AuthRequired, createTeam)
-	teamRouter.POST("/join", middleware.AuthRequired, joinTeam)
+	teamRouter.POST("/join/:id", middleware.AuthRequired, joinTeam)
 	teamRouter.GET("/me", middleware.AuthRequired, getMyTeam)
+	teamRouter.PATCH("/edit", middleware.AuthRequired, editTeam)
+	teamRouter.DELETE("/delete", middleware.AuthRequired, deleteTeam)
+	teamRouter.POST("/leave", middleware.AuthRequired, leaveTeam)
 }

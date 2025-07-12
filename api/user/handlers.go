@@ -4,10 +4,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/AnimeKaizoku/cacher"
 	"github.com/gin-gonic/gin"
+	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/models"
 	"github.com/intraware/rodan/utils"
 	"github.com/sirupsen/logrus"
@@ -15,18 +14,12 @@ import (
 	"gorm.io/gorm"
 )
 
-var UserCache = cacher.NewCacher[int, models.User](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 3,
-	CleanInterval: time.Hour * 2,
-	CleanerMode:   cacher.CleaningCentral,
-})
-
 func getMyProfile(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
 	var user models.User
 	cacheHit := false
-	if val, ok := UserCache.Get(userID); ok {
+	if val, ok := shared.UserCache.Get(userID); ok {
 		user = val
 		cacheHit = true
 	} else {
@@ -41,7 +34,7 @@ func getMyProfile(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
 			return
 		} else {
-			UserCache.Set(user.ID, user)
+			shared.UserCache.Set(user.ID, user)
 		}
 	}
 	userInfo := userInfo{
@@ -79,7 +72,7 @@ func getUserProfile(ctx *gin.Context) {
 	}
 	var user models.User
 	cacheHit := false
-	if val, ok := UserCache.Get(userID); ok {
+	if val, ok := shared.UserCache.Get(userID); ok {
 		user = val
 		cacheHit = true
 	} else {
@@ -106,7 +99,7 @@ func getUserProfile(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 			return
 		} else {
-			UserCache.Set(userID, user)
+			shared.UserCache.Set(userID, user)
 		}
 	}
 	userInfo := userInfo{
@@ -143,7 +136,7 @@ func updateProfile(ctx *gin.Context) {
 	}
 	var user models.User
 	cacheHit := false
-	if val, ok := UserCache.Get(userID); ok {
+	if val, ok := shared.UserCache.Get(userID); ok {
 		user = val
 		cacheHit = true
 	} else {
@@ -196,7 +189,7 @@ func updateProfile(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to update profile"})
 		return
 	}
-	UserCache.Delete(userID)
+	shared.UserCache.Delete(userID)
 	auditLog.WithFields(logrus.Fields{
 		"event":        "update_profile",
 		"status":       "success",
@@ -227,7 +220,7 @@ func deleteProfile(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Internal server error"})
 		return
 	}
-	UserCache.Delete(userID)
+	shared.UserCache.Delete(userID)
 	if result.RowsAffected == 0 {
 		auditLog.WithFields(logrus.Fields{
 			"event":   "delete_profile",
@@ -253,7 +246,7 @@ func profileTOTP(ctx *gin.Context) {
 	userID := ctx.GetInt("user_id")
 	var user models.User
 	cacheHit := false
-	if val, ok := UserCache.Get(userID); ok {
+	if val, ok := shared.UserCache.Get(userID); ok {
 		user = val
 		cacheHit = true
 	} else {
@@ -269,7 +262,7 @@ func profileTOTP(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to fetch user"})
 			return
 		}
-		UserCache.Set(userID, user)
+		shared.UserCache.Set(userID, user)
 	}
 	totpURL, _ := user.TOTPUrl()
 	png, err := qrcode.Encode(totpURL, qrcode.Medium, 256)
@@ -301,7 +294,7 @@ func profileBackupCode(ctx *gin.Context) {
 	userID := ctx.GetInt("user_id")
 	var user models.User
 	cacheHit := false
-	if val, ok := UserCache.Get(userID); ok {
+	if val, ok := shared.UserCache.Get(userID); ok {
 		user = val
 		cacheHit = true
 	} else {
@@ -317,7 +310,7 @@ func profileBackupCode(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to fetch user"})
 			return
 		}
-		UserCache.Set(userID, user)
+		shared.UserCache.Set(userID, user)
 	}
 	auditLog.WithFields(logrus.Fields{
 		"event":       "profile_backup_code",
