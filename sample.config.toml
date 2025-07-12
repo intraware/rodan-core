@@ -21,7 +21,7 @@ database-name = "your_database"
 ssl-mode = "disable" 
 
 [app]
-team-code-refresh-minutes = 30
 enable-leaderboard = { user=true, team=true}
 token-expiry = 10
 totp-issuer = "intraware"
+team-size = 3
