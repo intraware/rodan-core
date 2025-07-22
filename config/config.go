@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/BurntSushi/toml"
 )
@@ -27,8 +29,9 @@ type SecurityConfig struct {
 }
 
 type DockerConfig struct {
-	SocketURL string          `toml:"socket-url"`
-	PortRange DockerPortRange `toml:"port-range"`
+	SocketURL        string          `toml:"socket-url"`
+	PortRange        DockerPortRange `toml:"port-range"`
+	ContainerTimeout int             `toml:"container-timeout"`
 }
 
 type DockerPortRange struct {
@@ -46,15 +49,21 @@ type DatabaseConfig struct {
 }
 
 type AppConfig struct {
-	EnableLeaderboard LeaderboardConfig `toml:"enable-leaderboard"`
-	TokenExpiry       int               `toml:"token-expiry"`
-	TOTPIssuer        string            `toml:"totp-issuer"`
-	TeamSize          int               `toml:"team-size"`
+	Leaderboard        LeaderboardConfig `toml:"leaderboard"`
+	TokenExpiry        int               `toml:"token-expiry"`
+	TOTPIssuer         string            `toml:"totp-issuer"`
+	TeamSize           int               `toml:"team-size"`
+	BanMode            string            `toml:"ban-mode"`
+	TeamContainerLimit int               `toml:"team-container-limit"`
+	FlagFormat         string            `toml:"flag-format"`
 }
 
 type LeaderboardConfig struct {
-	User bool `toml:"user"`
-	Team bool `toml:"team"`
+	User                bool          `toml:"user"`
+	Team                bool          `toml:"team"`
+	DebounceTimer       time.Duration `toml:"debounce-timer"`
+	FullPointsThreshold int           `toml:"full-points-threshold"`
+	DecaySharpness      float64       `toml:"decay-sharpness"`
 }
 
 func LoadConfig(path string) (Config, error) {
@@ -62,6 +71,9 @@ func LoadConfig(path string) (Config, error) {
 	if _, err := toml.DecodeFile(path, &cfg); err != nil {
 		fmt.Println("The config file is invalid")
 		return Config{}, err
+	}
+	if cfg.App.BanMode != "user" && cfg.App.BanMode != "team" {
+		log.Fatal("Invalid ban-mode. Must be 'user' or 'team'")
 	}
 	return cfg, nil
 }

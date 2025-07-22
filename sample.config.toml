@@ -11,6 +11,9 @@ flag-secret = "super-secret-flag-key"
 [docker]
 socket-url = "unix:///var/run/docker.sock" 
 port-range = { start = 40000, end = 45000 }
+container-timeout = 0 
+pool-size = 3
+clean-orphaned = true
 
 [database]
 host = "localhost"
@@ -21,7 +24,16 @@ database-name = "your_database"
 ssl-mode = "disable" 
 
 [app]
-enable-leaderboard = { user=true, team=true}
 token-expiry = 10
 totp-issuer = "intraware"
 team-size = 3
+ban-mode = "user"
+team-container-limit = 3
+flag-format = "rodan"
+
+[app.leaderboard]
+user = true
+team = true
+debounce-timer = "30s"
+full-points-threshold = 3 # this much ppl will get full points
+decay-sharpness = 2.25
