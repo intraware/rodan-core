@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/intraware/rodan/config"
+	"github.com/intraware/rodan/internal/config"
 )
 
 func CORS(cfg config.ServerConfig) gin.HandlerFunc {

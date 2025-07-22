@@ -29,7 +29,7 @@ type User struct {
 	ID             int    `json:"id" gorm:"primaryKey"`
 	Username       string `json:"username" gorm:"unique"`
 	Password       string `json:"password"`
-	Email          string `json:"email"`
+	Email          string `json:"email" gorm:"unique"`
 	GitHubUsername string `json:"github_username" gorm:"column:github_username;unique"`
 	Ban            bool   `json:"ban" gorm:"default:false"`
 	BackupCode     string `gorm:"unique"`

@@ -3,34 +3,29 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api"
-	"github.com/intraware/rodan/config"
 	"github.com/intraware/rodan/models"
 	"github.com/intraware/rodan/utils"
 	"github.com/intraware/rodan/utils/middleware"
 	"github.com/intraware/rodan/utils/values"
-	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	var cfg config.Config
-	if config, err := config.LoadConfig("./sample.config.toml"); err != nil {
-		fmt.Printf("Error in loading config file: %v\n", err)
-		return
-	} else {
-		cfg = config
+	if err := values.InitWithViper("./sample.config.toml"); err != nil {
+		log.Fatalf("Failed to load config: %v", err)
 	}
-	values.SetConfig(&cfg)
-	models.InitDB(&cfg)
-	cleanupService, err := utils.NewCleanupService()
+	cfg := values.GetConfig()
+	models.InitDB(cfg)
+	/*cleanupService, err := utils.NewCleanupService()
 	if err != nil {
 		logrus.Warnf("Failed to initialize cleanup service: %v", err)
 	} else {
 		cleanupService.StartCleanupRoutine()
 		defer cleanupService.Close()
-	}
+	}*/
 	utils.NewLogger(cfg.Server.Production)
 	if cfg.Server.Production {
 		gin.SetMode(gin.ReleaseMode)

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/intraware/rodan/config"
+	"github.com/intraware/rodan/internal/config"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

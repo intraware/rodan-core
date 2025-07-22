@@ -2,10 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"time"
-
-	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
@@ -31,7 +28,7 @@ type SecurityConfig struct {
 type DockerConfig struct {
 	SocketURL        string          `toml:"socket-url"`
 	PortRange        DockerPortRange `toml:"port-range"`
-	ContainerTimeout int             `toml:"container-timeout"`
+	ContainerTimeout time.Duration   `toml:"container-timeout"`
 }
 
 type DockerPortRange struct {
@@ -50,7 +47,7 @@ type DatabaseConfig struct {
 
 type AppConfig struct {
 	Leaderboard        LeaderboardConfig `toml:"leaderboard"`
-	TokenExpiry        int               `toml:"token-expiry"`
+	TokenExpiry        time.Duration     `toml:"token-expiry"`
 	TOTPIssuer         string            `toml:"totp-issuer"`
 	TeamSize           int               `toml:"team-size"`
 	BanMode            string            `toml:"ban-mode"`
@@ -66,14 +63,16 @@ type LeaderboardConfig struct {
 	DecaySharpness      float64       `toml:"decay-sharpness"`
 }
 
-func LoadConfig(path string) (Config, error) {
-	var cfg Config
-	if _, err := toml.DecodeFile(path, &cfg); err != nil {
-		fmt.Println("The config file is invalid")
-		return Config{}, err
+func (cfg *Config) Validate() error {
+	lb := cfg.App.Leaderboard
+	if lb.DecaySharpness <= 0 {
+		return fmt.Errorf("decay-sharpness must be positive")
+	}
+	if lb.FullPointsThreshold < 0 {
+		return fmt.Errorf("full-points-threshold must be >= 0")
 	}
 	if cfg.App.BanMode != "user" && cfg.App.BanMode != "team" {
-		log.Fatal("Invalid ban-mode. Must be 'user' or 'team'")
+		return fmt.Errorf("ban-mode must be 'user' or 'team'")
 	}
-	return cfg, nil
+	return nil
 }

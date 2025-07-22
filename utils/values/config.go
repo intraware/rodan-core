@@ -3,7 +3,7 @@ package values
 import (
 	"sync/atomic"
 
-	"github.com/intraware/rodan/config"
+	"github.com/intraware/rodan/internal/config"
 )
 
 var cfg atomic.Value

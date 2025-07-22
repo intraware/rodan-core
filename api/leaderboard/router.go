@@ -7,7 +7,7 @@ import (
 
 func LoadLeaderboard(r *gin.RouterGroup) {
 	lbRouter := r.Group("/leaderboard")
-	lbConfig := values.GetConfig().App.EnableLeaderboard
+	lbConfig := values.GetConfig().App.Leaderboard
 	if lbConfig.User {
 		lbRouter.GET("/user", getUserLeaderboard)
 	}

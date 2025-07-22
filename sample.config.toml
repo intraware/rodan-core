@@ -11,7 +11,7 @@ flag-secret = "super-secret-flag-key"
 [docker]
 socket-url = "unix:///var/run/docker.sock" 
 port-range = { start = 40000, end = 45000 }
-container-timeout = 0 
+container-timeout = "0s"
 pool-size = 3
 clean-orphaned = true
 
@@ -24,7 +24,7 @@ database-name = "your_database"
 ssl-mode = "disable" 
 
 [app]
-token-expiry = 10
+token-expiry = "10m"
 totp-issuer = "intraware"
 team-size = 3
 ban-mode = "user"

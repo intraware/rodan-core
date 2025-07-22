@@ -6,23 +6,15 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/AnimeKaizoku/cacher"
 	"github.com/gin-gonic/gin"
+	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/models"
 	"github.com/intraware/rodan/utils"
 	"github.com/intraware/rodan/utils/values"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
-
-var LoginCache = cacher.NewCacher[string, models.User](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 2,
-	CleanInterval: time.Hour * 1,
-	CleanerMode:   cacher.CleaningCentral,
-	Revaluate:     true,
-})
 
 func signUp(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -121,7 +113,7 @@ func login(ctx *gin.Context) {
 	}
 	var user models.User
 	cacheHit := false
-	if val, ok := LoginCache.Get(req.Username); ok {
+	if val, ok := shared.LoginCache.Get(req.Username); ok {
 		user = val
 		cacheHit = true
 	} else {
@@ -148,7 +140,7 @@ func login(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 			return
 		} else {
-			LoginCache.Set(req.Username, user)
+			shared.LoginCache.Set(req.Username, user)
 		}
 	}
 	if user.Ban {
@@ -247,7 +239,7 @@ func forgotPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Provide either OTP or Backup Code, not both"})
 		return
 	}
-	if value, ok := LoginCache.Get(input.Username); ok {
+	if value, ok := shared.LoginCache.Get(input.Username); ok {
 		ctx.Set("message", fmt.Sprintf("User %d loaded from login cache", value.ID))
 		user = value
 		auditLog.WithFields(logrus.Fields{
@@ -330,7 +322,7 @@ func forgotPassword(ctx *gin.Context) {
 		return
 	}
 	token := hex.EncodeToString(random)
-	ResetPasswordCache.Set(token, user)
+	shared.ResetPasswordCache.Set(token, user)
 	auditLog.WithFields(logrus.Fields{
 		"event":    "forgot_password_token_issued",
 		"status":   "success",
@@ -356,7 +348,7 @@ func resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing reset token"})
 		return
 	}
-	user, ok := ResetPasswordCache.Get(token)
+	user, ok := shared.ResetPasswordCache.Get(token)
 	if !ok {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "reset_password",
@@ -407,8 +399,8 @@ func resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
 		return
 	}
-	ResetPasswordCache.Delete(token)
-	LoginCache.Delete(user.Email)
+	shared.ResetPasswordCache.Delete(token)
+	shared.LoginCache.Delete(user.Email)
 	auditLog.WithFields(logrus.Fields{
 		"event":    "reset_password",
 		"status":   "success",

@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 
 	"github.com/docker/docker/client"
+	"github.com/intraware/rodan/utils/values"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 	initMutex    sync.Mutex
 )
 
-func getDockerClient() (*client.Client, error) {
+func GetDockerClient() (*client.Client, error) {
 	if cli := dockerClient.Load(); cli != nil {
 		return cli.(*client.Client), nil
 	}
@@ -26,8 +27,8 @@ func getDockerClient() (*client.Client, error) {
 	if cli := dockerClient.Load(); cli != nil {
 		return cli.(*client.Client), nil
 	}
-	//	cfg := values.GetConfig()
-	socketURL := "unix:///var/run/docker.sock"
+	cfg := values.GetConfig().Docker
+	socketURL := cfg.SocketURL
 	var httpClient *http.Client
 	switch {
 	case strings.HasPrefix(socketURL, "unix://"):
@@ -55,6 +56,6 @@ func getDockerClient() (*client.Client, error) {
 	return cli, nil
 }
 
-func resetDockerClient() {
+func ResetDockerClient() {
 	dockerClient.Store(nil)
 }
