@@ -12,11 +12,13 @@ func LoadChallenges(r *gin.RouterGroup) {
 
 	// Protected routes
 	challengeRouter.GET("/:id", middleware.AuthRequired, handlers.GetChallengeDetail) // gotta change it ..
-	// TODO: add support for both static and dynamic challenges with a new route whcih will return links etc based on challenge (sabdbox/static)
+	challengeRouter.GET("/:id/config", middleware.AuthRequired, handlers.GetChallengeConfig)
 	challengeRouter.POST("/:id/submit", middleware.AuthRequired, handlers.SubmitFlag)
+
 	challengeRouter.POST("/:id/start", middleware.AuthRequired, handlers.StartDynamicChallenge)
 	challengeRouter.POST("/:id/stop", middleware.AuthRequired, handlers.StopDynamicChallenge)
 	challengeRouter.POST("/:id/extend", middleware.AuthRequired, handlers.ExtendDynamicChallenge)
+	challengeRouter.POST("/:id/regenerate", middleware.AuthRequired, handlers.RegenerateDynamicChallenge)
 
 	// Hint routes (all protected)
 	hintRouter := challengeRouter.Group("/:challenge_id/hint", middleware.AuthRequired)

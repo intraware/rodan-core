@@ -29,6 +29,7 @@ type DockerConfig struct {
 	SocketURL        string          `toml:"socket-url"`
 	PortRange        DockerPortRange `toml:"port-range"`
 	ContainerTimeout time.Duration   `toml:"container-timeout"`
+	PoolSize         int             `toml:"pool-size"`
 }
 
 type DockerPortRange struct {

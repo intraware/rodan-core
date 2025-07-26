@@ -12,6 +12,7 @@ type challengeItem struct {
 type challengeDetail struct {
 	ID         int      `json:"id"`
 	Name       string   `json:"name"`
+	Author     string   `json:"author"`
 	Desc       string   `json:"desc"`
 	Category   int8     `json:"category"`
 	Difficulty int8     `json:"difficulty"`

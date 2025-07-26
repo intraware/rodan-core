@@ -32,6 +32,7 @@ type DynamicConfig struct {
 	DockerImage  string   `json:"docker_image,omitempty"`
 	ExposedPorts []string `json:"exposed_ports,omitempty" gorm:"type:text[]"`
 	TTL          int64    `json:"ttl"`
+	Reusable     bool     `json:"reusable"`
 }
 
 type Hint struct {

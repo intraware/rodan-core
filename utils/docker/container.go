@@ -2,7 +2,6 @@ package docker
 
 import (
 	"context"
-	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/intraware/rodan/utils/values"
@@ -37,7 +36,7 @@ func StopContainer(ctx context.Context, containerID string) (err error) {
 	return
 }
 
-func CreateContainer(ctx context.Context, containerName, imageName string, ttl time.Time) (containerID string, err error) {
+func CreateContainer(ctx context.Context, containerName, imageName string) (containerID string, err error) {
 	containerID = ""
 	err = nil
 	cli, err := GetDockerClient()
@@ -49,6 +48,9 @@ func CreateContainer(ctx context.Context, containerName, imageName string, ttl t
 	}
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
+		Labels: map[string]string{
+			"created_by": "rodan",
+		},
 	}, &container.HostConfig{}, nil, nil, containerName)
 	if err != nil {
 		return

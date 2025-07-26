@@ -163,6 +163,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 	response := challengeDetail{
 		ID:         challenge.ID,
 		Name:       challenge.Name,
+		Author:     challenge.Author,
 		Desc:       challenge.Desc,
 		Category:   challenge.Category,
 		Difficulty: challenge.Difficulty,
@@ -191,6 +192,10 @@ func GetChallengeDetail(ctx *gin.Context) {
 		"ip":            ctx.ClientIP(),
 	}).Info("Fetched challenge detail successfully")
 	ctx.JSON(http.StatusOK, response)
+}
+
+func GetChallengeConfig(ctx *gin.Context) {
+
 }
 
 func SubmitFlag(ctx *gin.Context) {
