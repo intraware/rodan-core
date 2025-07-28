@@ -7,7 +7,7 @@ import (
 )
 
 type pool struct {
-	mu   sync.Mutex
+	mu   sync.RWMutex
 	pool map[int][]*container
 }
 
@@ -45,4 +45,18 @@ func (p *pool) Release(c *container) error {
 	}
 	p.pool[challengeID] = append(p.pool[challengeID], c)
 	return nil
+}
+
+func (p *pool) CheckIfExists(containerID string) bool {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	for _, containers := range p.pool {
+		for i := range containers {
+			ctr := containers[i]
+			if ctr.ContainerID == containerID {
+				return true
+			}
+		}
+	}
+	return false
 }

@@ -30,6 +30,7 @@ type DockerConfig struct {
 	PortRange        DockerPortRange `toml:"port-range"`
 	ContainerTimeout time.Duration   `toml:"container-timeout"`
 	PoolSize         int             `toml:"pool-size"`
+	CleanOrphaned    bool            `toml:"clean-orphaned"`
 }
 
 type DockerPortRange struct {

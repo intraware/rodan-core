@@ -19,10 +19,11 @@ type SandBox struct {
 	CreatedAt     time.Time
 	Active        bool
 	Context       context.Context
+	CancelFunc    context.CancelFunc
 }
 
 func NewSandBox(userID, teamID int, challenge *models.Challenge) *SandBox {
-	ctx := context.Background() // change it
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(challenge.DynamicConfig.TTL))
 	return &SandBox{
 		UserID:        userID,
 		TeamID:        teamID,
@@ -30,31 +31,44 @@ func NewSandBox(userID, teamID int, challenge *models.Challenge) *SandBox {
 		Container:     nil,
 		CreatedAt:     time.Now(),
 		Context:       ctx,
+		CancelFunc:    cancel,
 	}
 }
 
-func (s *SandBox) Start() (err error) {
-	var ctr *container
-	ctr, err = containerPool.Aquire(s.ChallengeMeta.ID)
+func (s *SandBox) Start() error {
+	if s.CancelFunc != nil {
+		s.CancelFunc()
+	}
+	ttl := time.Duration(s.ChallengeMeta.DynamicConfig.TTL)
+	ctx, cancel := context.WithTimeout(context.Background(), ttl)
+	s.Context = ctx
+	s.CancelFunc = cancel
+	ctr, err := containerPool.Aquire(s.ChallengeMeta.ID)
 	if err != nil && !errors.Is(err, errNoContainers) {
+		cancel()
+		s.CancelFunc = nil
 		return ErrFailedToCreateContainer
 	}
 	if ctr == nil && errors.Is(err, errNoContainers) {
-		container_name := fmt.Sprintf("%d-%d-%d", s.UserID, s.TeamID, s.ChallengeMeta.ID)
+		containerName := fmt.Sprintf("%d-%d-%d", s.UserID, s.TeamID, s.ChallengeMeta.ID)
 		ctr, err = newContainer(
-			s.Context,
+			ctx,
 			s.ChallengeMeta.ID,
-			container_name,
+			containerName,
 			s.ChallengeMeta.DynamicConfig.DockerImage,
-			time.Duration(s.ChallengeMeta.DynamicConfig.TTL),
+			ttl,
 		)
-	}
-	if err != nil {
-		return ErrFailedToCreateContainer
+		if err != nil {
+			cancel()
+			s.CancelFunc = nil
+			return ErrFailedToCreateContainer
+		}
 	}
 	err = ctr.Start()
 	if err != nil {
 		ctr.Discard()
+		cancel()
+		s.CancelFunc = nil
 		return ErrFailedToStartContainer
 	}
 	s.Container = ctr
@@ -63,6 +77,10 @@ func (s *SandBox) Start() (err error) {
 }
 
 func (s *SandBox) Stop() error {
+	if s.CancelFunc != nil {
+		s.CancelFunc()
+		s.CancelFunc = nil
+	}
 	if s.Container == nil {
 		return ErrContainerNotFound
 	}
@@ -102,6 +120,10 @@ func (s *SandBox) Regenerate(challenge *models.Challenge) (err error) {
 	}
 	var ctr *container
 	container_name := fmt.Sprintf("%d-%d-%d", s.UserID, s.TeamID, s.ChallengeMeta.ID)
+	ttl := time.Duration(challenge.DynamicConfig.TTL)
+	ctx, cancel := context.WithTimeout(context.Background(), ttl)
+	s.Context = ctx
+	s.CancelFunc = cancel
 	ctr, err = newContainer(
 		s.Context,
 		s.ChallengeMeta.ID,
@@ -124,8 +146,15 @@ func (s *SandBox) Regenerate(challenge *models.Challenge) (err error) {
 }
 
 func (s *SandBox) ExtendTTL() {
-	s.Container.StartedAt = time.Now() // this should be increased
-} // extend the ttl of sandbox
+	if s.CancelFunc != nil {
+		s.CancelFunc()
+	}
+	ttl := time.Duration(s.ChallengeMeta.DynamicConfig.TTL)
+	ctx, cancel := context.WithTimeout(context.Background(), ttl)
+	s.Context = ctx
+	s.CancelFunc = cancel
+	s.Container.StartedAt = time.Now()
+}
 
 func (s *SandBox) GetMeta() {
 	// gotta look into these

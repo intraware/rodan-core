@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/intraware/rodan/utils/values"
 )
 
@@ -72,4 +73,24 @@ func RemoveContainer(ctx context.Context, containerID string) (err error) {
 		Force: true,
 	})
 	return
+}
+
+func ListContainers(ctx context.Context) ([]container.Summary, error) {
+	cli, err := GetDockerClient()
+	if _, ping_err := cli.Ping(ctx); ping_err != nil {
+		ResetDockerClient()
+	}
+	if err != nil {
+		return nil, err
+	}
+	filterArgs := filters.NewArgs()
+	filterArgs.Add("label", "created_by=rodan")
+	containers, err := cli.ContainerList(ctx, container.ListOptions{
+		All:     true,
+		Filters: filterArgs,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return containers, nil
 }
