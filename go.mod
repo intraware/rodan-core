@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/AnimeKaizoku/cacher v1.0.3-0.20250629133904-5bdf0cc1d3f7
 	github.com/containerd/errdefs v1.0.0
-	github.com/docker/docker v28.3.2+incompatible
+	github.com/docker/docker v28.3.3+incompatible
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
