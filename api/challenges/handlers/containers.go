@@ -82,10 +82,11 @@ func StartDynamicChallenge(ctx *gin.Context) {
 		return
 	}
 	var challenge_sandbox *sandbox.SandBox
+	flag := generateHashedFlag(challengeID, *user.TeamID)
 	if val, ok := shared.SandBoxMap[*user.TeamID]; ok {
 		challenge_sandbox = val
 	} else {
-		challenge_sandbox = sandbox.NewSandBox(userID, *user.TeamID, &challenge)
+		challenge_sandbox = sandbox.NewSandBox(userID, *user.TeamID, &challenge, flag)
 		shared.SandBoxMap[*user.TeamID] = challenge_sandbox
 	}
 	if challenge_sandbox.Active {

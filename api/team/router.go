@@ -8,14 +8,14 @@ import (
 func LoadTeam(r *gin.RouterGroup) {
 	teamRouter := r.Group("/team")
 
-	// Public routes
-	teamRouter.GET("/:id", getTeam)
+	teamRouter.GET("/:id", middleware.CacheMiddleware, getTeam)
 
-	// Protected routes - middleware applied directly to endpoints
-	teamRouter.POST("/create", middleware.AuthRequired, createTeam)
-	teamRouter.POST("/join/:id", middleware.AuthRequired, joinTeam)
-	teamRouter.GET("/me", middleware.AuthRequired, getMyTeam)
-	teamRouter.PATCH("/edit", middleware.AuthRequired, editTeam)
-	teamRouter.DELETE("/delete", middleware.AuthRequired, deleteTeam)
-	teamRouter.POST("/leave", middleware.AuthRequired, leaveTeam)
+	protectedRouter := teamRouter.Group("/")
+	protectedRouter.Use(middleware.AuthRequired)
+	protectedRouter.POST("/create", createTeam)
+	protectedRouter.POST("/join/:id", joinTeam)
+	protectedRouter.GET("/me", middleware.CacheMiddleware, getMyTeam)
+	protectedRouter.PATCH("/edit", editTeam)
+	protectedRouter.DELETE("/delete", deleteTeam)
+	protectedRouter.POST("/leave", leaveTeam)
 }

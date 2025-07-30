@@ -1,10 +1,11 @@
 services:
-
   server:
     build:
       context: .
       dockerfile: Dockerfile
     # image: ghcr.io/intraware/rodan:latest
+    environment:
+      CONFIG_FILE: /app/config.toml
     ports:
       - "8000:8000"
     volumes:

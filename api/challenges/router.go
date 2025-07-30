@@ -8,21 +8,23 @@ import (
 
 func LoadChallenges(r *gin.RouterGroup) {
 	challengeRouter := r.Group("/challenge")
-	challengeRouter.GET("/list", handlers.GetChallengeList) // TODO: gotta support chained challenges
+	challengeRouter.GET("/list", middleware.CacheMiddleware, handlers.GetChallengeList) // TODO: gotta support chained challenges
 
 	// Protected routes
-	challengeRouter.GET("/:id", middleware.AuthRequired, handlers.GetChallengeDetail) // gotta change it ..
-	challengeRouter.GET("/:id/config", middleware.AuthRequired, handlers.GetChallengeConfig)
-	challengeRouter.POST("/:id/submit", middleware.AuthRequired, handlers.SubmitFlag)
+	protectedRouter := challengeRouter.Group("/")
+	protectedRouter.Use(middleware.AuthRequired)
+	protectedRouter.GET("/:id", middleware.CacheMiddleware, handlers.GetChallengeDetail) // gotta change it ..
+	protectedRouter.GET("/:id/config", handlers.GetChallengeConfig)
+	protectedRouter.POST("/:id/submit", handlers.SubmitFlag)
 
-	challengeRouter.POST("/:id/start", middleware.AuthRequired, handlers.StartDynamicChallenge)
-	challengeRouter.POST("/:id/stop", middleware.AuthRequired, handlers.StopDynamicChallenge)
-	challengeRouter.POST("/:id/extend", middleware.AuthRequired, handlers.ExtendDynamicChallenge)
-	challengeRouter.POST("/:id/regenerate", middleware.AuthRequired, handlers.RegenerateDynamicChallenge)
+	protectedRouter.POST("/:id/start", handlers.StartDynamicChallenge)
+	protectedRouter.POST("/:id/stop", handlers.StopDynamicChallenge)
+	protectedRouter.POST("/:id/extend", handlers.ExtendDynamicChallenge)
+	protectedRouter.POST("/:id/regenerate", handlers.RegenerateDynamicChallenge)
 
 	// Hint routes (all protected)
 	hintRouter := challengeRouter.Group("/:challenge_id/hint", middleware.AuthRequired)
-	hintRouter.GET("/list", handlers.ListHints)
+	hintRouter.GET("/list", middleware.CacheMiddleware, handlers.ListHints)
 	hintRouter.GET("/:hint_id", handlers.GetHint)
 	hintRouter.POST("/:hint_id/buy", handlers.BuyHint)
 }

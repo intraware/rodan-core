@@ -57,5 +57,5 @@ func GetDockerClient() (*client.Client, error) {
 }
 
 func ResetDockerClient() {
-	dockerClient.Store(nil)
+	dockerClient.Store((*client.Client)(nil))
 }

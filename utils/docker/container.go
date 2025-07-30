@@ -2,6 +2,8 @@ package docker
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -93,4 +95,37 @@ func ListContainers(ctx context.Context) ([]container.Summary, error) {
 		return nil, err
 	}
 	return containers, nil
+}
+
+func RunCommand(ctx context.Context, containerID, command string) (err error) {
+	err = nil
+	cli, err := GetDockerClient()
+	if _, ping_err := cli.Ping(ctx); ping_err != nil {
+		ResetDockerClient()
+	}
+	if err != nil {
+		return
+	}
+	cmd := strings.Fields(command)
+	if len(cmd) == 0 {
+		return fmt.Errorf("empty command")
+	}
+	exe, err := cli.ContainerExecCreate(ctx, containerID, container.ExecOptions{
+		User:       "rodan",
+		Privileged: false,
+		Tty:        false,
+		Cmd:        cmd,
+		WorkingDir: "/",
+	})
+	if err != nil {
+		return
+	}
+	err = cli.ContainerExecStart(ctx, exe.ID, container.ExecStartOptions{
+		Detach: false,
+		Tty:    false,
+	})
+	if err != nil {
+		return
+	}
+	return
 }

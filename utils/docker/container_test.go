@@ -13,7 +13,9 @@ var sharedContainerID string
 
 func TestContainerLifecycleSequence(t *testing.T) {
 	t.Run("Create", testCreateContainer)
+	t.Run("List", testListContainers)
 	t.Run("Start", testStartContainer)
+	t.Run("RunCommand", testRunCommand)
 	t.Run("Stop", testStopContainer)
 	t.Run("Remove", testRemoveContainer)
 }
@@ -21,11 +23,9 @@ func TestContainerLifecycleSequence(t *testing.T) {
 func testCreateContainer(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	userID := 1
-	teamID := 99
 	imageName := "alpine"
-	challengeName := "integration"
-	containerID, err := docker.CreateContainer(ctx, userID, teamID, imageName, challengeName)
+	containerName := "integration-test"
+	containerID, err := docker.CreateContainer(ctx, containerName, imageName)
 	if err != nil {
 		t.Fatalf("CreateContainer failed: %v", err)
 	}
@@ -42,7 +42,7 @@ func testStartContainer(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	err := docker.StartContainer(ctx, sharedContainerID, time.Now().Add(1*time.Minute))
+	err := docker.StartContainer(ctx, sharedContainerID)
 	if err != nil {
 		t.Fatalf("StartContainer failed: %v", err)
 	}
@@ -82,5 +82,45 @@ func testRemoveContainer(t *testing.T) {
 		t.Error("Expected container to be removed, but it's still inspectable")
 	} else {
 		t.Log("Container removal verified")
+	}
+}
+
+func testRunCommand(t *testing.T) {
+	if sharedContainerID == "" {
+		t.Fatal("sharedContainerID is empty — Start test probably failed")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	err := docker.RunCommand(ctx, sharedContainerID, "echo hello")
+	if err != nil {
+		t.Fatalf("RunCommand failed: %v", err)
+	}
+	t.Logf("Command ran successfully on container: %s", sharedContainerID)
+}
+
+func testListContainers(t *testing.T) {
+	if sharedContainerID == "" {
+		t.Fatal("sharedContainerID is empty — Create test probably failed")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	containers, err := docker.ListContainers(ctx)
+	if err != nil {
+		t.Fatalf("ListContainers failed: %v", err)
+	}
+	if len(containers) == 0 {
+		t.Fatal("No containers returned by ListContainers")
+	}
+	found := false
+	for _, c := range containers {
+		if c.ID == sharedContainerID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("Expected container %s not found in ListContainers result", sharedContainerID)
+	} else {
+		t.Logf("Container %s found in ListContainers", sharedContainerID)
 	}
 }

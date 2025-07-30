@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/intraware/rodan/utils/docker"
@@ -51,10 +52,13 @@ func (c *container) Discard() (err error) {
 	return
 }
 
-func (c *container) Reset() {
-	// run the cleaner script
+func (c *container) Reset() (err error) {
+	err = docker.RunCommand(c.Context, c.ContainerID, "./reset")
+	return
 }
 
-func (c *container) GenerateFlag(flag string) {
-	// run the generator script
+func (c *container) GenerateFlag(flag string) (err error) {
+	generate := fmt.Sprintf("./generate %s", flag)
+	err = docker.RunCommand(c.Context, c.ContainerID, generate)
+	return
 }

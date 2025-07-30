@@ -207,7 +207,7 @@ func updateLeaderboards() {
 		return teamLeaderboard[i].Points > teamLeaderboard[j].Points
 	})
 	teamLeaderboardCache.Store(&teamLeaderboard)
-
+	LastModified.Store(time.Now().UTC())
 	log.Println("[leaderboard] cache updated")
 }
 

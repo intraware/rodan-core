@@ -3,6 +3,7 @@ package values
 import (
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/intraware/rodan/internal/config"
@@ -19,6 +20,13 @@ func InitWithViper(path string) error {
 	var cfg config.Config
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
+	}
+	if cfg.App.EmailRegex != "" {
+		regex, err := regexp.Compile(cfg.App.EmailRegex)
+		if err != nil {
+			return fmt.Errorf("invalid email regex in config: %w", err)
+		}
+		cfg.App.CompiledEmail = regex
 	}
 	if err := cfg.Validate(); err != nil {
 		return err

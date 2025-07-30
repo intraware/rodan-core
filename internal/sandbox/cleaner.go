@@ -150,7 +150,7 @@ func (c *cleaner) checkIfExists(containerID string) bool {
 
 	for e := c.BoxList.Front(); e != nil; e = e.Next() {
 		box := e.Value.(*SandBox)
-		if box.Container != nil && box.Container.ID == containerID {
+		if box.Container != nil && box.Container.ContainerID == containerID {
 			return true
 		}
 	}

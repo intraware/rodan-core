@@ -29,7 +29,7 @@ func ImageExists(ctx context.Context, imageName string) bool {
 
 func PullImage(ctx context.Context, imageName string) error {
 	cli, err := GetDockerClient()
-	if _,ping_err := cli.Ping(ctx), ping_err != nil {
+	if _, ping_err := cli.Ping(ctx); ping_err != nil {
 		ResetDockerClient()
 	}
 	if err != nil {

@@ -29,6 +29,10 @@ func signUp(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Failed to parse the body"})
 		return
 	}
+	if !values.GetConfig().App.CompiledEmail.MatchString(req.Email) {
+		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Bad email ID provided"})
+		return
+	}
 	user := models.User{
 		Username:       req.Username,
 		Email:          req.Email,

@@ -18,11 +18,12 @@ type SandBox struct {
 	Container     *container
 	CreatedAt     time.Time
 	Active        bool
+	Flag          string
 	Context       context.Context
 	CancelFunc    context.CancelFunc
 }
 
-func NewSandBox(userID, teamID int, challenge *models.Challenge) *SandBox {
+func NewSandBox(userID, teamID int, challenge *models.Challenge, flag string) *SandBox {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(challenge.DynamicConfig.TTL))
 	return &SandBox{
 		UserID:        userID,
@@ -32,6 +33,7 @@ func NewSandBox(userID, teamID int, challenge *models.Challenge) *SandBox {
 		CreatedAt:     time.Now(),
 		Context:       ctx,
 		CancelFunc:    cancel,
+		Flag:          flag,
 	}
 }
 
@@ -63,6 +65,13 @@ func (s *SandBox) Start() error {
 			s.CancelFunc = nil
 			return ErrFailedToCreateContainer
 		}
+	}
+	err = ctr.GenerateFlag(s.Flag)
+	if err != nil {
+		ctr.Discard()
+		cancel()
+		s.CancelFunc = nil
+		return ErrFailedToGenerateFlag
 	}
 	err = ctr.Start()
 	if err != nil {
@@ -133,6 +142,12 @@ func (s *SandBox) Regenerate(challenge *models.Challenge) (err error) {
 	)
 	if err != nil {
 		err = ErrFailedToCreateContainer
+		return
+	}
+	err = ctr.GenerateFlag(s.Flag)
+	if err != nil {
+		ctr.Stop()
+		err = ErrFailedToGenerateFlag
 		return
 	}
 	err = ctr.Start()

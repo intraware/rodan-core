@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api"
@@ -14,18 +15,12 @@ import (
 )
 
 func main() {
-	if err := values.InitWithViper("./sample.config.toml"); err != nil {
+	config_file := os.Getenv("CONFIG_FILE")
+	if err := values.InitWithViper(config_file); err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 	cfg := values.GetConfig()
 	models.InitDB(cfg)
-	/*cleanupService, err := utils.NewCleanupService()
-	if err != nil {
-		logrus.Warnf("Failed to initialize cleanup service: %v", err)
-	} else {
-		cleanupService.StartCleanupRoutine()
-		defer cleanupService.Close()
-	}*/
 	utils.NewLogger(cfg.Server.Production)
 	if cfg.Server.Production {
 		gin.SetMode(gin.ReleaseMode)

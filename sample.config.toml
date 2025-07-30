@@ -1,7 +1,7 @@
 [server]
 host = "127.0.0.1"
 port = 8000
-production = false
+production = true
 cors-url = ["*"]
 
 [security]
@@ -24,12 +24,14 @@ database-name = "your_database"
 ssl-mode = "disable" 
 
 [app]
+email-regex = ""
 token-expiry = "10m"
 totp-issuer = "intraware"
 team-size = 3
 ban-mode = "user"
 team-container-limit = 3
 flag-format = "rodan"
+frontend-cache-duration = "60s"
 
 [app.leaderboard]
 user = true
