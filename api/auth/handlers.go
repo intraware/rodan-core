@@ -66,7 +66,7 @@ func signUp(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to create user"})
 		return
 	}
-	token, err := utils.GenerateJWT(user.ID, user.Username, values.GetConfig().Security.JWTSecret)
+	token, err := utils.GenerateJWT(user.ID, user.Username, values.GetConfig().Server.Security.JWTSecret)
 	if err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":    "sign_up",
@@ -179,7 +179,7 @@ func login(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, errorResponse{Error: "Invalid username or password"})
 		return
 	}
-	token, err := utils.GenerateJWT(user.ID, user.Username, values.GetConfig().Security.JWTSecret)
+	token, err := utils.GenerateJWT(user.ID, user.Username, values.GetConfig().Server.Security.JWTSecret)
 	if err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":    "login",

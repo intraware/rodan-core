@@ -17,11 +17,11 @@ type container struct {
 	StartedAt   time.Time
 }
 
-func newContainer(ctx context.Context, challengeID int, containerName, imageName string, ttl time.Duration) (*container, error) {
+func newContainer(ctx context.Context, challengeID int, containerName, imageName string, ttl time.Duration, exposedPorts []string) (*container, error) {
 	if !docker.ImageExists(ctx, imageName) {
 		return nil, errImageNotExists
 	}
-	containerID, err := docker.CreateContainer(ctx, containerName, imageName)
+	containerID, err := docker.CreateContainer(ctx, containerName, imageName, exposedPorts)
 	if err != nil {
 		return nil, err
 	}

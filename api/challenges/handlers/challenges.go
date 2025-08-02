@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/leaderboard"
 	"github.com/intraware/rodan/api/shared"
+	"github.com/intraware/rodan/internal/sandbox"
 	"github.com/intraware/rodan/models"
 	"github.com/intraware/rodan/utils"
+	"github.com/intraware/rodan/utils/values"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -18,7 +21,7 @@ import (
 func GetChallengeList(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var challenges []models.Challenge
-	if err := models.DB.Select("id, name").Find(&challenges).Error; err != nil {
+	if err := models.DB.Select("id, name").Where("is_visible = ?", true).Find(&challenges).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "get_challenge_list",
 			"status": "failure",
@@ -128,7 +131,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 		challenge = val
 		challengeCacheHit = true
 	} else {
-		if err := models.DB.First(&challenge, challengeID).Error; err != nil {
+		if err := models.DB.Where("is_visible = ?", true).First(&challenge, challengeID).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				auditLog.WithFields(logrus.Fields{
 					"event":     "get_challenge_detail",
@@ -171,15 +174,6 @@ func GetChallengeDetail(ctx *gin.Context) {
 		Points:     points,
 		Solved:     solved,
 	}
-	if challenge.IsStatic {
-		if err := models.DB.Model(&challenge).Association("StaticConfig").Find(&challenge.StaticConfig); err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to get static metadata from DB"})
-			return
-		}
-		response.Links = challenge.StaticConfig.Links
-	} else {
-		response.Links = []string{}
-	}
 	auditLog.WithFields(logrus.Fields{
 		"event":         "get_challenge_detail",
 		"status":        "success",
@@ -196,7 +190,250 @@ func GetChallengeDetail(ctx *gin.Context) {
 }
 
 func GetChallengeConfig(ctx *gin.Context) {
-
+	auditLog := utils.Logger.WithField("type", "audit")
+	userID := ctx.GetInt("user_id")
+	var user models.User
+	userCacheHit := false
+	if val, ok := shared.UserCache.Get(userID); ok {
+		user = val
+		userCacheHit = true
+	} else {
+		if err := models.DB.First(&user, userID).Error; err != nil {
+			auditLog.WithFields(logrus.Fields{
+				"event":    "get_challenge_config",
+				"status":   "failure",
+				"reason":   "db_error_user_lookup",
+				"user_id":  userID,
+				"ip":       ctx.ClientIP(),
+				"error":    err.Error(),
+				"user_hit": userCacheHit,
+			}).Error("Failed to fetch user from DB")
+			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			return
+		}
+		shared.UserCache.Set(userID, user)
+	}
+	challengeIDStr := ctx.Param("id")
+	challengeID, err := strconv.Atoi(challengeIDStr)
+	if err != nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":     "get_challenge_config",
+			"status":    "failure",
+			"reason":    "invalid_challenge_id",
+			"user_id":   user.ID,
+			"challenge": challengeIDStr,
+			"ip":        ctx.ClientIP(),
+		}).Warn("Invalid challenge ID in request")
+		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid challenge ID"})
+		return
+	}
+	if user.TeamID == nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":    "get_challenge_config",
+			"status":   "failure",
+			"reason":   "no_team",
+			"user_id":  user.ID,
+			"ip":       ctx.ClientIP(),
+			"user_hit": userCacheHit,
+		}).Warn("User is not part of a team")
+		ctx.JSON(http.StatusForbidden, errorResponse{Error: "User should belong to a team"})
+		return
+	}
+	solved := false
+	solveCacheHit := false
+	{
+		key := fmt.Sprintf("%d:%d", *user.TeamID, challengeID)
+		var solve models.Solve
+		if val, ok := shared.TeamSolvedCache.Get(key); ok && val {
+			solved = true
+			solveCacheHit = true
+		} else {
+			err := models.DB.Where("team_id = ? AND challenge_id = ?", *user.TeamID, challengeID).First(&solve).Error
+			if err == nil {
+				solved = true
+				shared.TeamSolvedCache.Set(key, true)
+			} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				auditLog.WithFields(logrus.Fields{
+					"event":     "get_challenge_config",
+					"status":    "partial_failure",
+					"reason":    "db_error_solve_lookup",
+					"user_id":   user.ID,
+					"team_id":   *user.TeamID,
+					"challenge": challengeID,
+					"ip":        ctx.ClientIP(),
+					"error":     err.Error(),
+				}).Warn("Error checking solve status")
+			}
+		}
+	}
+	var challenge models.Challenge
+	challengeCacheHit := false
+	if val, ok := shared.ChallengeCache.Get(challengeID); ok {
+		challenge = val
+		challengeCacheHit = true
+	} else {
+		if err := models.DB.Where("is_visible = ?", true).First(&challenge, challengeID).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				auditLog.WithFields(logrus.Fields{
+					"event":     "get_challenge_config",
+					"status":    "failure",
+					"reason":    "challenge_not_found",
+					"user_id":   user.ID,
+					"challenge": challengeID,
+					"ip":        ctx.ClientIP(),
+				}).Warn("Challenge not found")
+				ctx.JSON(http.StatusNotFound, errorResponse{Error: "Challenge not found"})
+				return
+			}
+			auditLog.WithFields(logrus.Fields{
+				"event":     "get_challenge_config",
+				"status":    "failure",
+				"reason":    "db_error_challenge_lookup",
+				"user_id":   user.ID,
+				"challenge": challengeID,
+				"ip":        ctx.ClientIP(),
+				"error":     err.Error(),
+			}).Error("Error fetching challenge from DB")
+			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			return
+		}
+		shared.ChallengeCache.Set(challengeID, challenge)
+	}
+	// for files .. store in links
+	var response challengeConfigResponse
+	if challenge.IsStatic {
+		var static_config models.StaticConfig
+		staticConfigCacheHit := false
+		if val, ok := shared.StaticConfig.Get(challenge.ID); ok {
+			static_config = val
+			staticConfigCacheHit = true
+		} else {
+			if err := models.DB.Where("challenge_id = ?", challenge.ID).First(&static_config).Error; err != nil {
+				auditLog.WithFields(logrus.Fields{
+					"event":         "get_challenge_config",
+					"status":        "failure",
+					"reason":        "db_error_static_config",
+					"user_id":       user.ID,
+					"team_id":       *user.TeamID,
+					"challenge":     challengeID,
+					"user_hit":      userCacheHit,
+					"solve_hit":     solveCacheHit,
+					"challenge_hit": challengeCacheHit,
+					"ip":            ctx.ClientIP(),
+					"error":         err.Error(),
+				}).Error("Failed to retrieve static config from DB")
+				ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to retrieve data from DB"})
+				return
+			} else {
+				shared.StaticConfig.Set(challenge.ID, static_config)
+			}
+		}
+		response = challengeConfigResponse{
+			ID:       challenge.ID,
+			Links:    static_config.Links,
+			Ports:    static_config.Ports,
+			IsStatic: true,
+		}
+		cache_time := values.GetConfig().App.CacheDuration
+		ctx.Header("Cache-Control", fmt.Sprintf("public,max-age=%.0f", cache_time.Seconds()))
+		ctx.Header("Expires", time.Now().Add(cache_time).Format(http.TimeFormat))
+		auditLog.WithFields(logrus.Fields{
+			"event":             "get_challenge_config",
+			"status":            "success",
+			"user_id":           user.ID,
+			"team_id":           *user.TeamID,
+			"challenge":         challengeID,
+			"solved":            solved,
+			"user_hit":          userCacheHit,
+			"solve_hit":         solveCacheHit,
+			"challenge_hit":     challengeCacheHit,
+			"static_config_hit": staticConfigCacheHit,
+			"is_static":         true,
+			"ip":                ctx.ClientIP(),
+		}).Info("Fetched static challenge config successfully")
+	} else {
+		var challenge_sandbox *sandbox.SandBox
+		if val, ok := shared.SandBoxMap[*user.TeamID]; ok {
+			challenge_sandbox = val
+		} else {
+			auditLog.WithFields(logrus.Fields{
+				"event":         "get_challenge_config",
+				"status":        "failure",
+				"reason":        "sandbox_not_created",
+				"user_id":       user.ID,
+				"team_id":       *user.TeamID,
+				"challenge":     challengeID,
+				"user_hit":      userCacheHit,
+				"solve_hit":     solveCacheHit,
+				"challenge_hit": challengeCacheHit,
+				"is_static":     false,
+				"ip":            ctx.ClientIP(),
+			}).Warn("The user doesn't have a sandbox created")
+			ctx.JSON(http.StatusNotFound, errorResponse{Error: "The user doesnt have a sandbox created"})
+			return
+		}
+		if !challenge_sandbox.Active {
+			auditLog.WithFields(logrus.Fields{
+				"event":         "get_challenge_config",
+				"status":        "failure",
+				"reason":        "sandbox_not_active",
+				"user_id":       user.ID,
+				"team_id":       *user.TeamID,
+				"challenge":     challengeID,
+				"user_hit":      userCacheHit,
+				"solve_hit":     solveCacheHit,
+				"challenge_hit": challengeCacheHit,
+				"is_static":     false,
+				"ip":            ctx.ClientIP(),
+			}).Warn("The user doesn't have sandbox active")
+			ctx.JSON(http.StatusForbidden, errorResponse{Error: "The user doesnt have sandbox active"})
+			return
+		}
+		var sandbox_meta sandbox.SandBoxResponse
+		if val, err := challenge_sandbox.GetMeta(); err != nil {
+			auditLog.WithFields(logrus.Fields{
+				"event":         "get_challenge_config",
+				"status":        "failure",
+				"reason":        "sandbox_meta_error",
+				"user_id":       user.ID,
+				"team_id":       *user.TeamID,
+				"challenge":     challengeID,
+				"user_hit":      userCacheHit,
+				"solve_hit":     solveCacheHit,
+				"challenge_hit": challengeCacheHit,
+				"is_static":     false,
+				"ip":            ctx.ClientIP(),
+				"error":         err.Error(),
+			}).Error("Failed to get meta of sandbox")
+			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to get meta of sandbox"})
+			return
+		} else {
+			sandbox_meta = val
+		}
+		response = challengeConfigResponse{
+			ID:       challenge.ID,
+			Links:    sandbox_meta.Links,
+			TimeLeft: sandbox_meta.TimeLeft,
+			IsStatic: false,
+		}
+		for v := range sandbox_meta.Ports {
+			response.Ports = append(response.Ports, int(v))
+		}
+		auditLog.WithFields(logrus.Fields{
+			"event":         "get_challenge_config",
+			"status":        "success",
+			"user_id":       user.ID,
+			"team_id":       *user.TeamID,
+			"challenge":     challengeID,
+			"solved":        solved,
+			"user_hit":      userCacheHit,
+			"solve_hit":     solveCacheHit,
+			"challenge_hit": challengeCacheHit,
+			"is_static":     false,
+			"ip":            ctx.ClientIP(),
+		}).Info("Fetched dynamic challenge config successfully")
+	}
+	ctx.JSON(http.StatusOK, response)
 }
 
 func SubmitFlag(ctx *gin.Context) {
@@ -278,7 +515,7 @@ func SubmitFlag(ctx *gin.Context) {
 		challenge = val
 		challengeCacheHit = true
 	} else {
-		if err := models.DB.First(&challenge, challengeID).Error; err != nil {
+		if err := models.DB.Where("is_visible = ?", true).First(&challenge, challengeID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				auditLog.WithFields(logrus.Fields{
 					"event":     "submit_flag",

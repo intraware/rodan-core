@@ -1,7 +1,7 @@
 package sandbox
 
 type SandBoxResponse struct {
-	Ports    []int16
+	Ports    []string
 	TimeLeft int64
 	Links    []string
 }

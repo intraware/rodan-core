@@ -10,21 +10,14 @@ type challengeItem struct {
 }
 
 type challengeDetail struct {
-	ID         int      `json:"id"`
-	Name       string   `json:"name"`
-	Author     string   `json:"author"`
-	Desc       string   `json:"desc"`
-	Category   int8     `json:"category"`
-	Difficulty int8     `json:"difficulty"`
-	Points     int      `json:"points"`
-	Solved     bool     `json:"solved"`
-	Links      []string `json:"links,omitempty"`
-}
-
-type ContainerResponse struct {
-	Flag  string   `json:"flag"`
-	Ports []int    `json:"ports"`
-	Links []string `json:"links"`
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Author     string `json:"author"`
+	Desc       string `json:"desc"`
+	Category   int8   `json:"category"`
+	Difficulty int8   `json:"difficulty"`
+	Points     int    `json:"points"`
+	Solved     bool   `json:"solved"`
 }
 
 type submitFlagRequest struct {
@@ -34,4 +27,12 @@ type submitFlagRequest struct {
 type submitFlagResponse struct {
 	Correct bool   `json:"correct"`
 	Message string `json:"message"`
+}
+
+type challengeConfigResponse struct {
+	ID       int      `json:"id"`
+	Links    []string `json:"links,omitempty"`
+	Ports    []int    `json:"ports,omitempty"`
+	TimeLeft int64    `json:"timeleft,omitempty"`
+	IsStatic bool     `json:"is_static"`
 }

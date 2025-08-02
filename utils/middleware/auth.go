@@ -22,7 +22,7 @@ var AuthRequired gin.HandlerFunc = func(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	claims, err := utils.ValidateJWT(tokenString, values.GetConfig().Security.JWTSecret)
+	claims, err := utils.ValidateJWT(tokenString, values.GetConfig().Server.Security.JWTSecret)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		ctx.Abort()

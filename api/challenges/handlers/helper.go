@@ -142,7 +142,7 @@ func getDynamicFlag(challengeID, teamID int) string {
 
 func generateHashedFlag(challengeID, teamID int) string {
 	cfg := values.GetConfig()
-	input := fmt.Sprintf("%d%s%d", teamID, cfg.Security.FlagSecret, challengeID)
+	input := fmt.Sprintf("%d%s%d", teamID, cfg.Server.Security.FlagSecret, challengeID)
 	hash := sha256.Sum256([]byte(input))
 	hashHex := hex.EncodeToString(hash[:])
 	return fmt.Sprintf("%s{%s}", cfg.App.FlagFormat, hashHex[:32])

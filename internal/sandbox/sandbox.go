@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/intraware/rodan/models"
+	"github.com/intraware/rodan/utils/docker"
 )
 
 var containerPool = newPool()
@@ -59,6 +60,7 @@ func (s *SandBox) Start() error {
 			containerName,
 			s.ChallengeMeta.DynamicConfig.DockerImage,
 			ttl,
+			s.ChallengeMeta.DynamicConfig.ExposedPorts,
 		)
 		if err != nil {
 			cancel()
@@ -139,6 +141,7 @@ func (s *SandBox) Regenerate(challenge *models.Challenge) (err error) {
 		container_name,
 		s.ChallengeMeta.DynamicConfig.DockerImage,
 		time.Duration(s.ChallengeMeta.DynamicConfig.TTL),
+		s.ChallengeMeta.DynamicConfig.ExposedPorts,
 	)
 	if err != nil {
 		err = ErrFailedToCreateContainer
@@ -171,6 +174,19 @@ func (s *SandBox) ExtendTTL() {
 	s.Container.StartedAt = time.Now()
 }
 
-func (s *SandBox) GetMeta() {
-	// gotta look into these
-} // details like ports exposed etc and time left
+func (s *SandBox) GetMeta() (SandBoxResponse, error) {
+	var response SandBoxResponse
+	ports, err := docker.GetBoundPorts(s.Context, s.Container.ContainerID)
+	if err != nil {
+		return response, err
+	}
+	response.Ports = make([]string, 0, len(ports))
+	for _, port := range ports {
+		response.Ports = append(response.Ports, port)
+	}
+	expiryTime := s.Container.StartedAt.Add(s.Container.TTL)
+	timeLeft := time.Until(expiryTime).Seconds()
+	timeLeft = max(timeLeft, 0)
+	response.TimeLeft = int64(timeLeft)
+	return response, nil
+}

@@ -4,7 +4,7 @@ port = 8000
 production = true
 cors-url = ["*"]
 
-[security]
+[server.security]
 jwt-secret = "testing"
 flag-secret = "super-secret-flag-key"
 
@@ -14,6 +14,8 @@ port-range = { start = 40000, end = 45000 }
 container-timeout = "0s"
 pool-size = 3
 clean-orphaned = true
+binding-host = "0.0.0.0"
+port-retry-times = 3
 
 [database]
 host = "localhost"

@@ -8,17 +8,17 @@ import (
 
 type Config struct {
 	Server   ServerConfig   `mapstructure:"server"`
-	Security SecurityConfig `mapstructure:"security"`
 	Docker   DockerConfig   `mapstructure:"docker"`
 	Database DatabaseConfig `mapstructure:"database"`
 	App      AppConfig      `mapstructure:"app"`
 }
 
 type ServerConfig struct {
-	Host       string   `mapstructure:"host"`
-	Port       int      `mapstructure:"port"`
-	Production bool     `mapstructure:"production"`
-	CORSURL    []string `mapstructure:"cors-url"`
+	Host       string         `mapstructure:"host"`
+	Port       int            `mapstructure:"port"`
+	Production bool           `mapstructure:"production"`
+	CORSURL    []string       `mapstructure:"cors-url"`
+	Security   SecurityConfig `mapstructure:"security"`
 }
 
 type SecurityConfig struct {
@@ -32,6 +32,8 @@ type DockerConfig struct {
 	ContainerTimeout time.Duration   `mapstructure:"container-timeout"`
 	PoolSize         int             `mapstructure:"pool-size"`
 	CleanOrphaned    bool            `mapstructure:"clean-orphaned"`
+	BindingHost      string          `mapstructure:"binding-host"`
+	PortsMaxRetry    int             `mapstructure:"port-retry-times"`
 }
 
 type DockerPortRange struct {

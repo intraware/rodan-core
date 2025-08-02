@@ -13,6 +13,7 @@ type Challenge struct {
 	PointsMax  int    `json:"points_max"`
 	Difficulty int8   `json:"difficulty"`
 	IsStatic   bool   `json:"is_static"`
+	IsVisible  bool   `json:"is_visible"`
 
 	StaticConfig  *StaticConfig  `gorm:"foreignKey:ChallengeID;constraint:OnDelete:CASCADE"`
 	DynamicConfig *DynamicConfig `gorm:"foreignKey:ChallengeID;constraint:OnDelete:CASCADE"`
