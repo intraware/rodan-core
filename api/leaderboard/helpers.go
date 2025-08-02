@@ -86,7 +86,9 @@ func timeAdjustedScoreWithCreatedAt(
 
 func updateLeaderboards() {
 	var solves []models.Solve
-	err := models.DB.Order("challenge_id, created_at").Find(&solves).Error
+	userBlackList := values.GetConfig().App.Leaderboard.UserBlackList
+	teamBlackList := values.GetConfig().App.Leaderboard.TeamBlackList
+	err := models.DB.Where("user_id NOT IN ? AND team_id NOT IN ?", userBlackList, teamBlackList).Order("challenge_id, created_at").Find(&solves).Error
 	if err != nil {
 		log.Println("[leaderboard] DB error:", err)
 		return
@@ -149,7 +151,7 @@ func updateLeaderboards() {
 	}
 	if len(missingIDs) > 0 {
 		var users []models.User
-		if err := models.DB.Where("id IN ?", missingIDs).Find(&users).Error; err == nil {
+		if err := models.DB.Where("id IN ? AND id NOT IN ? AND team_id NOT IN ?", missingIDs, userBlackList, teamBlackList).Find(&users).Error; err == nil {
 			for _, u := range users {
 				shared.UserCache.Set(u.ID, u)
 				userToName[u.ID] = u.Username
@@ -188,7 +190,7 @@ func updateLeaderboards() {
 	}
 	if len(missingTeamIDs) > 0 {
 		var teams []models.Team
-		if err := models.DB.Where("id IN ?", missingTeamIDs).Find(&teams).Error; err == nil {
+		if err := models.DB.Where("id IN ? AND id NOT in ?", missingTeamIDs, teamBlackList).Find(&teams).Error; err == nil {
 			for _, t := range teams {
 				shared.TeamCache.Set(t.ID, t)
 				teamToName[t.ID] = t.Name

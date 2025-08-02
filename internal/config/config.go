@@ -69,6 +69,8 @@ type LeaderboardConfig struct {
 	DebounceTimer       time.Duration `mapstructure:"debounce-timer"`
 	FullPointsThreshold int           `mapstructure:"full-points-threshold"`
 	DecaySharpness      float64       `mapstructure:"decay-sharpness"`
+	UserBlackList       []int         `mapstructure:"user-blacklist"`
+	TeamBlackList       []int         `mapstructure:"team-blacklist"`
 }
 
 func (cfg *Config) Validate() error {

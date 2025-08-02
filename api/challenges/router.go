@@ -13,7 +13,7 @@ func LoadChallenges(r *gin.RouterGroup) {
 	// Protected routes
 	protectedRouter := challengeRouter.Group("/")
 	protectedRouter.Use(middleware.AuthRequired)
-	protectedRouter.GET("/:id", middleware.CacheMiddleware, handlers.GetChallengeDetail) // gotta change it ..
+	protectedRouter.GET("/:id", middleware.CacheMiddleware, handlers.GetChallengeDetail)
 	protectedRouter.GET("/:id/config", handlers.GetChallengeConfig)
 	protectedRouter.POST("/:id/submit", handlers.SubmitFlag)
 

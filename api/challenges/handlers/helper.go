@@ -34,6 +34,8 @@ var challengeStats sync.Map
 
 func getUserCount() int {
 	now := time.Now()
+	userBlackList := values.GetConfig().App.Leaderboard.UserBlackList
+	teamBlackList := values.GetConfig().App.Leaderboard.TeamBlackList
 	last := time.Unix(0, userUpdatedAt.Load())
 	backoff := time.Duration(userBackoff.Load())
 	if backoff == 0 {
@@ -43,7 +45,7 @@ func getUserCount() int {
 		return int(userCount.Load())
 	}
 	var count int64
-	err := models.DB.Model(&models.User{}).Count(&count).Error
+	err := models.DB.Where("id NOT IN ? AND team_id NOT IN ?", userBlackList, teamBlackList).Model(&models.User{}).Count(&count).Error
 	if err != nil {
 		return int(userCount.Load())
 	}
@@ -51,9 +53,7 @@ func getUserCount() int {
 	current := userCount.Load()
 	if int64(count) == current {
 		newBackoff := backoff * 2
-		if newBackoff > maxBackoff {
-			newBackoff = maxBackoff
-		}
+		newBackoff = max(maxBackoff, newBackoff)
 		userBackoff.Store(int64(newBackoff))
 	} else {
 		userCount.Store(int64(count))
@@ -67,6 +67,8 @@ func getSolveCount(challengeID int) int {
 	now := time.Now()
 	val, _ := challengeStats.LoadOrStore(challengeID, &challengeSolveStat{})
 	stat := val.(*challengeSolveStat)
+	userBlackList := values.GetConfig().App.Leaderboard.UserBlackList
+	teamBlackList := values.GetConfig().App.Leaderboard.TeamBlackList
 
 	last := time.Unix(0, stat.LastUpdateUnix.Load())
 	backoff := time.Duration(stat.Backoff.Load())
@@ -78,7 +80,7 @@ func getSolveCount(challengeID int) int {
 	}
 	var count int64
 	err := models.DB.Model(&models.Solve{}).
-		Where("challenge_id = ?", challengeID).
+		Where("challenge_id = ? AND user_id NOT IN ? AND team_id NOT IN ?", challengeID, userBlackList, teamBlackList).
 		Count(&count).Error
 	if err != nil {
 		return int(stat.SolveCount.Load())
@@ -86,9 +88,7 @@ func getSolveCount(challengeID int) int {
 	current := stat.SolveCount.Load()
 	if int64(count) == current {
 		newBackoff := backoff * 2
-		if newBackoff > maxBackoff {
-			newBackoff = maxBackoff
-		}
+		newBackoff = max(maxBackoff, newBackoff)
 		stat.Backoff.Store(int64(newBackoff))
 	} else {
 		stat.SolveCount.Store(int64(count))
@@ -122,9 +122,7 @@ func smoothScore(solves int, maxPoints int, minPoints int, total int, offset int
 	}
 	x := float64(solves-offset) / float64(total-offset)
 	score := float64(maxPoints) - float64(maxPoints-minPoints)*math.Pow(x, power)
-	if score < float64(minPoints) {
-		score = float64(minPoints)
-	}
+	score = max(float64(minPoints), score)
 	return int(math.Round(score))
 }
 

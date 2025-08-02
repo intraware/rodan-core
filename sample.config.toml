@@ -41,3 +41,5 @@ team = true
 debounce-timer = "30s"
 full-points-threshold = 3 # this much ppl will get full points
 decay-sharpness = 2.25
+user-blacklist = [0,1]
+team-blacklist = [0,1]
