@@ -30,5 +30,6 @@ var AuthRequired gin.HandlerFunc = func(ctx *gin.Context) {
 	}
 	ctx.Set("user_id", claims.UserID)
 	ctx.Set("username", claims.Username)
+	ctx.Set("team_id", claims.TeamID)
 	ctx.Next()
 }

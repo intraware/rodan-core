@@ -8,6 +8,6 @@ type Container struct {
 	ChallengeID int      `json:"challenge_id" gorm:"index"`
 	ContainerID string   `json:"container_id" gorm:"unique"` // Docker container ID
 	Flag        string   `json:"flag"`
-	Ports       []int    `json:"ports"`
-	Links       []string `json:"links"`
+	Ports       []int    `json:"ports" gorm:"type:integer[]"`
+	Links       []string `json:"links" gorm:"type:text[]"`
 }

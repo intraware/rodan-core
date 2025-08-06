@@ -28,12 +28,12 @@ type StaticConfig struct {
 }
 
 type DynamicConfig struct {
-	gorm.Model
 	ChallengeID  int      `json:"challenge_id"`
 	DockerImage  string   `json:"docker_image,omitempty"`
 	ExposedPorts []string `json:"exposed_ports,omitempty" gorm:"type:text[]"`
 	TTL          int64    `json:"ttl"`
 	Reusable     bool     `json:"reusable"`
+	IsFiles      bool     `json:"is_files"`
 }
 
 type Hint struct {

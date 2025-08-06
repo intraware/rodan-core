@@ -5,8 +5,10 @@ import (
 	"github.com/intraware/rodan/api/auth"
 	"github.com/intraware/rodan/api/challenges"
 	"github.com/intraware/rodan/api/leaderboard"
+	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/api/team"
 	"github.com/intraware/rodan/api/user"
+	"github.com/intraware/rodan/utils/values"
 )
 
 func LoadRoutes(r *gin.Engine) {
@@ -19,6 +21,7 @@ func LoadRoutes(r *gin.Engine) {
 	user.LoadUser(apiRouter)
 	leaderboard.LoadLeaderboard(apiRouter)
 
+	shared.Init(values.GetConfig())
 	apiRouter.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{"msg": "pong"})
 	})

@@ -55,12 +55,12 @@ type AppConfig struct {
 	TokenExpiry        time.Duration     `mapstructure:"token-expiry"`
 	TOTPIssuer         string            `mapstructure:"totp-issuer"`
 	TeamSize           int               `mapstructure:"team-size"`
-	BanMode            string            `mapstructure:"ban-mode"`
 	TeamContainerLimit int               `mapstructure:"team-container-limit"`
 	FlagFormat         string            `mapstructure:"flag-format"`
 	CacheDuration      time.Duration     `mapstructure:"frontend-cache-duration"`
 	EmailRegex         string            `mapstructure:"email-regex"`
 	CompiledEmail      *regexp.Regexp    `mapstructure:"-"`
+	Ban                BanConfig         `mapstructure:"ban"`
 }
 
 type LeaderboardConfig struct {
@@ -73,6 +73,15 @@ type LeaderboardConfig struct {
 	TeamBlackList       []int         `mapstructure:"team-blacklist"`
 }
 
+type BanConfig struct {
+	UserBan            bool          `mapstructure:"enable-user-ban"`
+	TeamBan            bool          `mapstructure:"enable-team-ban"`
+	InitialBanDuration time.Duration `mapstructure:"initial-ban-duration"`
+	BanGrowthFactor    float64       `mapstructure:"ban-growth-factor"`
+	MaxBanDuration     time.Duration `mapstructure:"max-ban-duration"`
+	TrackHistory       bool          `mapstructure:"track-history"`
+}
+
 func (cfg *Config) Validate() error {
 	lb := cfg.App.Leaderboard
 	if lb.DecaySharpness <= 0 {
@@ -80,9 +89,6 @@ func (cfg *Config) Validate() error {
 	}
 	if lb.FullPointsThreshold < 0 {
 		return fmt.Errorf("full-points-threshold must be >= 0")
-	}
-	if cfg.App.BanMode != "user" && cfg.App.BanMode != "team" {
-		return fmt.Errorf("ban-mode must be 'user' or 'team'")
 	}
 	return nil
 }

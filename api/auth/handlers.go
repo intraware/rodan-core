@@ -66,7 +66,7 @@ func signUp(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to create user"})
 		return
 	}
-	token, err := utils.GenerateJWT(user.ID, user.Username, values.GetConfig().Server.Security.JWTSecret)
+	token, err := utils.GenerateJWT(0, user.ID, user.Username, values.GetConfig().Server.Security.JWTSecret)
 	if err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":    "sign_up",
@@ -121,7 +121,7 @@ func login(ctx *gin.Context) {
 		user = val
 		cacheHit = true
 	} else {
-		if err := models.DB.Where("username = ?", req.Username).First(&user).Error; err != nil {
+		if err := models.DB.Where("username = ?", req.Username).Preload("Team").First(&user).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				auditLog.WithFields(logrus.Fields{
 					"event":    "login",
@@ -159,6 +159,20 @@ func login(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, errorResponse{Error: "Account is banned"})
 		return
 	}
+	if user.Team.Ban {
+		auditLog.WithFields(logrus.Fields{
+			"event":     "login",
+			"status":    "failure",
+			"reason":    "banned",
+			"user_id":   user.ID,
+			"username":  user.Username,
+			"team_id":   user.Team.ID,
+			"team_name": user.Team.Name,
+			"ip":        ctx.ClientIP(),
+		}).Warn("Banned user attempted login")
+		ctx.JSON(http.StatusForbidden, errorResponse{Error: "Team is banned"})
+		return
+	}
 	isValid, err := user.ComparePassword(req.Password)
 	if err != nil || !isValid {
 		auditLog.WithFields(logrus.Fields{
@@ -179,7 +193,7 @@ func login(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, errorResponse{Error: "Invalid username or password"})
 		return
 	}
-	token, err := utils.GenerateJWT(user.ID, user.Username, values.GetConfig().Server.Security.JWTSecret)
+	token, err := utils.GenerateJWT(*user.TeamID, user.ID, user.Username, values.GetConfig().Server.Security.JWTSecret)
 	if err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":    "login",

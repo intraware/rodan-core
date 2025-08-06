@@ -43,3 +43,11 @@ full-points-threshold = 3 # this much ppl will get full points
 decay-sharpness = 2.25
 user-blacklist = [0,1]
 team-blacklist = [0,1]
+
+[app.ban]
+enable-user-ban = true
+enable-team-ban = false
+initial-ban-duration = "30m" 
+ban-growth-factor = 2.5
+max-ban-duration = "24h" 
+track-history = true

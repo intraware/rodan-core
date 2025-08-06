@@ -86,8 +86,8 @@ func timeAdjustedScoreWithCreatedAt(
 
 func updateLeaderboards() {
 	var solves []models.Solve
-	userBlackList := values.GetConfig().App.Leaderboard.UserBlackList
-	teamBlackList := values.GetConfig().App.Leaderboard.TeamBlackList
+	userBlackList := shared.UserBlackList
+	teamBlackList := shared.TeamBlackList
 	err := models.DB.Where("user_id NOT IN ? AND team_id NOT IN ?", userBlackList, teamBlackList).Order("challenge_id, created_at").Find(&solves).Error
 	if err != nil {
 		log.Println("[leaderboard] DB error:", err)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/intraware/rodan/internal/config"
+	"github.com/intraware/rodan/utils/values"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -54,8 +55,14 @@ func InitDB(cfg *config.Config) {
 	if err != nil {
 		logrus.Fatalf("Failed to connect to database after %d attempts: %v", maxRetries, err)
 	}
-	if err := DB.AutoMigrate(&User{}, &Team{}, &Challenge{}, &Container{}, &Solve{}); err != nil {
-		logrus.Fatalf("Failed to migrate database: %v", err)
+	if values.GetConfig().App.Ban.TrackHistory {
+		if err := DB.AutoMigrate(&User{}, &Team{}, &Challenge{}, &Container{}, &Solve{}, &BanHistory{}); err != nil {
+			logrus.Fatalf("Failed to migrate database: %v", err)
+		}
+	} else {
+		if err := DB.AutoMigrate(&User{}, &Team{}, &Challenge{}, &Container{}, &Solve{}); err != nil {
+			logrus.Fatalf("Failed to migrate database: %v", err)
+		}
 	}
 	logrus.Println("Database initialized successfully")
 }

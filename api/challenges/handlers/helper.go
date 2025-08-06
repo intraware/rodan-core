@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/models"
 	"github.com/intraware/rodan/utils/values"
 )
@@ -34,8 +35,8 @@ var challengeStats sync.Map
 
 func getUserCount() int {
 	now := time.Now()
-	userBlackList := values.GetConfig().App.Leaderboard.UserBlackList
-	teamBlackList := values.GetConfig().App.Leaderboard.TeamBlackList
+	userBlackList := shared.UserBlackList
+	teamBlackList := shared.TeamBlackList
 	last := time.Unix(0, userUpdatedAt.Load())
 	backoff := time.Duration(userBackoff.Load())
 	if backoff == 0 {
@@ -67,8 +68,8 @@ func getSolveCount(challengeID int) int {
 	now := time.Now()
 	val, _ := challengeStats.LoadOrStore(challengeID, &challengeSolveStat{})
 	stat := val.(*challengeSolveStat)
-	userBlackList := values.GetConfig().App.Leaderboard.UserBlackList
-	teamBlackList := values.GetConfig().App.Leaderboard.TeamBlackList
+	userBlackList := shared.UserBlackList
+	teamBlackList := shared.TeamBlackList
 
 	last := time.Unix(0, stat.LastUpdateUnix.Load())
 	backoff := time.Duration(stat.Backoff.Load())

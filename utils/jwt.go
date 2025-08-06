@@ -11,12 +11,14 @@ import (
 type Claims struct {
 	UserID   int    `json:"user_id"`
 	Username string `json:"username"`
+	TeamID   int    `json:"team_id"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID int, username string, secret string) (string, error) {
+func GenerateJWT(teamID, userID int, username string, secret string) (string, error) {
 	claims := &Claims{
 		UserID:   userID,
+		TeamID:   teamID,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(values.GetConfig().App.TokenExpiry)),
@@ -29,7 +31,7 @@ func GenerateJWT(userID int, username string, secret string) (string, error) {
 }
 
 func ValidateJWT(tokenString string, secret string) (*Claims, error) {
-	if token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	if token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(secret), nil
 	}); err != nil {
 		return nil, err

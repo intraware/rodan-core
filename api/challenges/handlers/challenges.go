@@ -589,6 +589,73 @@ func SubmitFlag(ctx *gin.Context) {
 		})
 		return
 	}
+	var flag_values []string
+	dynFlagMap.Range(func(key, value any) bool {
+		if req.Flag == value {
+			flag_values = append(flag_values, value.(string))
+		}
+		return true
+	})
+	if len(flag_values) > 0 {
+		if values.GetConfig().App.Ban.UserBan {
+			user.Ban = true
+			if err := models.DB.Save(&user).Error; err != nil {
+				auditLog.WithFields(logrus.Fields{
+					"event":     "user_ban",
+					"status":    "failure",
+					"reason":    "db_error_solve",
+					"user_id":   user.ID,
+					"team_id":   teamID,
+					"challenge": challengeID,
+					"ip":        ctx.ClientIP(),
+					"error":     err.Error(),
+				}).Error("Failed to record User ban")
+				ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to update user status"})
+				return
+			} else {
+				auditLog.WithFields(logrus.Fields{
+					"event":     "submit_flag",
+					"status":    "failure",
+					"reason":    "submit_other_flag",
+					"user_id":   user.ID,
+					"team_id":   teamID,
+					"challenge": challengeID,
+					"ip":        ctx.ClientIP(),
+				}).Error("User has submitted someone else's flag")
+				shared.UserCache.Delete(user.ID)
+				ctx.JSON(http.StatusForbidden, errorResponse{Error: "Account got banned"})
+				return
+			}
+		} else if values.GetConfig().App.Ban.TeamBan {
+			if err := models.DB.Where("id = ?", *user.TeamID).Update("ban", true).Error; err != nil {
+				auditLog.WithFields(logrus.Fields{
+					"event":     "team_ban",
+					"status":    "failure",
+					"reason":    "db_error_solve",
+					"user_id":   user.ID,
+					"team_id":   teamID,
+					"challenge": challengeID,
+					"ip":        ctx.ClientIP(),
+					"error":     err.Error(),
+				}).Error("Failed to record Team ban")
+				ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to update team status"})
+				return
+			} else {
+				auditLog.WithFields(logrus.Fields{
+					"event":     "submit_flag",
+					"status":    "failure",
+					"reason":    "submit_other_flag",
+					"user_id":   user.ID,
+					"team_id":   teamID,
+					"challenge": challengeID,
+					"ip":        ctx.ClientIP(),
+				}).Error("Team has submitted someone else's flag")
+				shared.TeamCache.Delete(*user.TeamID)
+				ctx.JSON(http.StatusForbidden, errorResponse{Error: "Team account got banned"})
+				return
+			}
+		}
+	}
 	solve := models.Solve{
 		TeamID:        teamID,
 		ChallengeID:   challengeID,
