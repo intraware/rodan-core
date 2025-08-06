@@ -139,13 +139,13 @@ func flush_cache(ctx *gin.Context) {
 		return
 	}
 	if cacheType == "all" {
-		shared.UserCache.Flush()
-		shared.TeamCache.Flush()
-		shared.ChallengeCache.Flush()
-		shared.LoginCache.Flush()
-		shared.StaticConfig.Flush()
-		shared.TeamSolvedCache.Flush()
-		shared.ResetPasswordCache.Flush()
+		shared.UserCache.Reset()
+		shared.TeamCache.Reset()
+		shared.ChallengeCache.Reset()
+		shared.LoginCache.Reset()
+		shared.StaticConfig.Reset()
+		shared.TeamSolvedCache.Reset()
+		shared.ResetPasswordCache.Reset()
 		auditLog.WithFields(logrus.Fields{
 			"event":   "flush_cache",
 			"status":  "success",
@@ -157,7 +157,7 @@ func flush_cache(ctx *gin.Context) {
 	}
 	switch cacheType {
 	case "user":
-		shared.UserCache.Flush()
+		shared.UserCache.Reset()
 		auditLog.WithFields(logrus.Fields{
 			"event":   "flush_cache",
 			"status":  "success",
@@ -166,7 +166,7 @@ func flush_cache(ctx *gin.Context) {
 		}).Info("User cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "User cache flushed successfully"})
 	case "team":
-		shared.TeamCache.Flush()
+		shared.TeamCache.Reset()
 		auditLog.WithFields(logrus.Fields{
 			"event":   "flush_cache",
 			"status":  "success",
@@ -175,7 +175,7 @@ func flush_cache(ctx *gin.Context) {
 		}).Info("Team cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "Team cache flushed successfully"})
 	case "challenge":
-		shared.ChallengeCache.Flush()
+		shared.ChallengeCache.Reset()
 		auditLog.WithFields(logrus.Fields{
 			"event":   "flush_cache",
 			"status":  "success",
@@ -183,6 +183,42 @@ func flush_cache(ctx *gin.Context) {
 			"ip":      ctx.ClientIP(),
 		}).Info("Challenge cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "Challenge cache flushed successfully"})
+	case "login":
+		shared.LoginCache.Reset()
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "success",
+			"cache":   "login",
+			"ip":      ctx.ClientIP(),
+		}).Info("Login cache flushed successfully")
+		ctx.JSON(http.StatusOK, successResponse{Message: "Login cache flushed successfully"})
+	case "static_config":
+		shared.StaticConfig.Reset()
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "success",
+			"cache":   "static_config",
+			"ip":      ctx.ClientIP(),
+		}).Info("Static config cache flushed successfully")
+		ctx.JSON(http.StatusOK, successResponse{Message: "Static config cache flushed successfully"})
+	case "team_solved":
+		shared.TeamSolvedCache.Reset()
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "success",
+			"cache":   "team_solved",
+			"ip":      ctx.ClientIP(),
+		}).Info("Team solved cache flushed successfully")
+		ctx.JSON(http.StatusOK, successResponse{Message: "Team solved cache flushed successfully"})
+	case "reset_password":
+		shared.ResetPasswordCache.Reset()
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "success",
+			"cache":   "reset_password",
+			"ip":      ctx.ClientIP(),
+		}).Info("Reset password cache flushed successfully")
+		ctx.JSON(http.StatusOK, successResponse{Message: "Reset password cache flushed successfully"})
 	default:
 		auditLog.WithFields(logrus.Fields{
 			"event":   "flush_cache",
