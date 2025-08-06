@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func getAllTeams(ctx *gin.Context) {
+func GetAllTeams(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var teams []models.Team
 
@@ -33,7 +33,7 @@ func getAllTeams(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, teams)
 }
 
-func updateTeam(ctx *gin.Context) {
+func UpdateTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var team models.Team
 
@@ -68,7 +68,7 @@ func updateTeam(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, team)
 }
 
-func deleteTeam(ctx *gin.Context) {
+func DeleteTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var team models.Team
 
@@ -103,7 +103,7 @@ func deleteTeam(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Team deleted successfully"})
 }
 
-func banTeam(ctx *gin.Context) {
+func BanTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var team models.Team
 
@@ -138,7 +138,7 @@ func banTeam(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Team banned successfully"})
 }
 
-func unbanTeam(ctx *gin.Context) {
+func UnbanTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var team models.Team
 
@@ -173,7 +173,7 @@ func unbanTeam(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Team unbanned successfully"})
 }
 
-func blacklistTeam(ctx *gin.Context) {
+func BlacklistTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var team models.Team
 
@@ -208,7 +208,7 @@ func blacklistTeam(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Team blacklisted successfully"})
 }
 
-func unblacklistTeam(ctx *gin.Context) {
+func UnblacklistTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var team models.Team
 

@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func getAllUsers(ctx *gin.Context) {
+func GetAllUsers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var users []models.User
 
@@ -27,7 +27,7 @@ func getAllUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, users)
 }
 
-func updateUser(ctx *gin.Context) {
+func UpdateUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
 
@@ -62,7 +62,7 @@ func updateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
-func deleteUser(ctx *gin.Context) {
+func DeleteUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
 
@@ -97,7 +97,7 @@ func deleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
-func banUser(ctx *gin.Context) {
+func BanUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
 
@@ -133,7 +133,7 @@ func banUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User banned successfully"})
 }
 
-func unbanUser(ctx *gin.Context) {
+func UnbanUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
 
@@ -169,7 +169,7 @@ func unbanUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User unbanned successfully"})
 }
 
-func blacklistUser(ctx *gin.Context) {
+func BlacklistUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
 
@@ -205,7 +205,7 @@ func blacklistUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User blacklisted successfully"})
 }
 
-func unblacklistUser(ctx *gin.Context) {
+func UnblacklistUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
 

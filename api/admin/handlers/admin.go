@@ -4,12 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/models"
+	"github.com/intraware/rodan/shared"
 	"github.com/intraware/rodan/utils"
 	"github.com/sirupsen/logrus"
 )
 
-func getAdmin(ctx *gin.Context) {
+func GetAdmin(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	adminID := ctx.GetInt("admin_id")
 	var admin models.Admin
@@ -27,7 +29,7 @@ func getAdmin(ctx *gin.Context) {
 	}
 }
 
-func addAdmin(ctx *gin.Context) {
+func AddAdmin(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var admin models.Admin
 
@@ -62,7 +64,7 @@ func addAdmin(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, admin)
 }
 
-func updateAdmin(ctx *gin.Context) {
+func UpdateAdmin(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	adminID := ctx.GetInt("admin_id")
 	var admin models.Admin
@@ -98,7 +100,7 @@ func updateAdmin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, admin)
 }
 
-func deleteAdmin(ctx *gin.Context) {
+func DeleteAdmin(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	adminID := ctx.GetInt("admin_id")
 
@@ -120,4 +122,75 @@ func deleteAdmin(ctx *gin.Context) {
 		"ip":      ctx.ClientIP(),
 	}).Info("Admin deleted successfully")
 	ctx.JSON(http.StatusNoContent, nil)
+}
+
+func flush_cache(ctx *gin.Context) {
+	// take a parameter to flush specific cache objesct or all cache
+	auditLog := utils.Logger.WithField("type", "audit")
+	cacheType := ctx.Query("type")
+	if cacheType == "" {
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "failure",
+			"reason":  "invalid_request",
+			"ip":      ctx.ClientIP(),
+		}).Warn("Invalid request in flushCache")
+		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		return
+	}
+	if cacheType == "all" {
+		shared.UserCache.Flush()
+		shared.TeamCache.Flush()
+		shared.ChallengeCache.Flush()
+		shared.LoginCache.Flush()
+		shared.StaticConfig.Flush()
+		shared.TeamSolvedCache.Flush()
+		shared.ResetPasswordCache.Flush()
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "success",
+			"cache":   "all",
+			"ip":      ctx.ClientIP(),
+		}).Info("All caches flushed successfully")
+		ctx.JSON(http.StatusOK, successResponse{Message: "All caches flushed successfully"})
+		return
+	}
+	switch cacheType {
+	case "user":
+		shared.UserCache.Flush()
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "success",
+			"cache":   "user",
+			"ip":      ctx.ClientIP(),
+		}).Info("User cache flushed successfully")
+		ctx.JSON(http.StatusOK, successResponse{Message: "User cache flushed successfully"})
+	case "team":
+		shared.TeamCache.Flush()
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "success",
+			"cache":   "team",
+			"ip":      ctx.ClientIP(),
+		}).Info("Team cache flushed successfully")
+		ctx.JSON(http.StatusOK, successResponse{Message: "Team cache flushed successfully"})
+	case "challenge":
+		shared.ChallengeCache.Flush()
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "success",
+			"cache":   "challenge",
+			"ip":      ctx.ClientIP(),
+		}).Info("Challenge cache flushed successfully")
+		ctx.JSON(http.StatusOK, successResponse{Message: "Challenge cache flushed successfully"})
+	default:
+		auditLog.WithFields(logrus.Fields{
+			"event":   "flush_cache",
+			"status":  "failure",
+			"reason":  "invalid_cache_type",
+			"ip":      ctx.ClientIP(),
+		}).Warn("Invalid cache type in flushCache")
+		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid cache type"})
+		return
+	}
 }
