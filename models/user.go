@@ -32,6 +32,7 @@ type User struct {
 	Email          string `json:"email" gorm:"unique"`
 	GitHubUsername string `json:"github_username" gorm:"column:github_username;unique"`
 	Ban            bool   `json:"ban" gorm:"default:false"`
+	Blacklist      bool   `json:"blacklist" gorm:"default:false"`
 	BackupCode     string `gorm:"unique"`
 	TOTPSecret     string `gorm:"unique"`
 	TeamID         *int   `json:"team_id" gorm:"column:team_id"`

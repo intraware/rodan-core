@@ -3,6 +3,7 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/utils/middleware"
+	"github.com/intraware/rodan/api/admin/handlers"
 )
 
 func LoadUser(r *gin.RouterGroup) {
@@ -16,6 +17,9 @@ func LoadUser(r *gin.RouterGroup) {
 
 	adminRouter.POST("/flush_cache", middleware.AuthRequired, flushCache)
 	adminRouter.POST("/close_submission", middleware.AuthRequired, closeChallengeSubmission)
+	adminRouter.POST("/open_submission", middleware.AuthRequired, openChallengeSubmission)
+	adminRouter.POST("/close_login", middleware.AuthRequired, closeChallenge)
+	adminRouter.POST("/open_login", middleware.AuthRequired, openChallengeLogin)
 
 	// Challenge related routes
 	challengeRouter := adminRouter.Group("/challenge")
@@ -31,6 +35,8 @@ func LoadUser(r *gin.RouterGroup) {
 	userRouter.DELETE("/delete", middleware.AuthRequired, deleteUser)
 	userRouter.POST("/ban", middleware.AuthRequired, banUser)
 	userRouter.POST("/unban", middleware.AuthRequired, unbanUser)
+	userRouter.POST("/blacklist", middleware.AuthRequired, blacklistUser)
+	userRouter.POST("/unblacklist", middleware.AuthRequired, unblacklistUser)
 	// userRouter.POST("/reset-password", middleware.AuthRequired, resetUserPassword) --> temp
 	userRouter.POST("/remove_from_team", middleware.AuthRequired, removeUserFromTeam)
 	userRouter.POST("/add_to_team", middleware.AuthRequired, addUserToTeam)
@@ -42,6 +48,8 @@ func LoadUser(r *gin.RouterGroup) {
 	teamRouter.DELETE("/delete", middleware.AuthRequired, deleteTeam)
 	teamRouter.POST("/ban", middleware.AuthRequired, banTeam)
 	teamRouter.POST("/unban", middleware.AuthRequired, unbanTeam)
+	teamRouter.POST("/blacklist", middleware.AuthRequired, blacklistTeam)
+	teamRouter.POST("/unblacklist", middleware.AuthRequired, unblacklistTeam)
 
 	// Container management routes
 	containerRouter := adminRouter.Group("/container")
