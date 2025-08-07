@@ -145,7 +145,6 @@ func flush_cache(ctx *gin.Context) {
 		shared.LoginCache.Reset()
 		shared.StaticConfig.Reset()
 		shared.TeamSolvedCache.Reset()
-		shared.ResetPasswordCache.Reset()
 		auditLog.WithFields(logrus.Fields{
 			"event":   "flush_cache",
 			"status":  "success",

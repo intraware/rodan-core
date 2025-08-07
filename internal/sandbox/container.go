@@ -62,3 +62,15 @@ func (c *container) GenerateFlag(flag string) (err error) {
 	err = docker.RunCommand(c.Context, c.ContainerID, generate)
 	return
 }
+
+func (c *container) GetAll() ([]string, error) {
+	containers, err := docker.ListContainers(c.Context)
+	if err != nil {
+		return nil, err
+	}
+	var containerIDs []string
+	for _, ctr := range containers {
+		containerIDs = append(containerIDs, ctr.ID)
+	}
+	return containerIDs, nil
+}

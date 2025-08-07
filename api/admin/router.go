@@ -58,4 +58,5 @@ func LoadUser(r *gin.RouterGroup) {
 	containerRouter.DELETE("/stop_team", handlers.StopTeamContainer)
 	containerRouter.DELETE("/stop_challenge", handlers.StopChallengeContainer)
 	containerRouter.DELETE("/stop_all", handlers.StopAllContainers)
+	containerRouter.POST("/kill_all", handlers.KillAllContainers)
 }
