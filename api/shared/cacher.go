@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/AnimeKaizoku/cacher"
-	"github.com/intraware/rodan/models"
+	"github.com/intraware/rodan/internal/models"
 )
 
 var UserCache = cacher.NewCacher[int, models.User](&cacher.NewCacherOpts{

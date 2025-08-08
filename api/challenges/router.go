@@ -3,7 +3,7 @@ package challenges
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/challenges/handlers"
-	"github.com/intraware/rodan/utils/middleware"
+	"github.com/intraware/rodan/internal/utils/middleware"
 )
 
 func LoadChallenges(r *gin.RouterGroup) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/AnimeKaizoku/cacher"
 	"github.com/intraware/rodan/internal/config"
-	"github.com/intraware/rodan/models"
+	"github.com/intraware/rodan/internal/models"
 )
 
 func Init(config *config.Config) {

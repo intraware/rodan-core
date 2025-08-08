@@ -3,7 +3,7 @@ package sandbox
 import (
 	"sync"
 
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 type pool struct {

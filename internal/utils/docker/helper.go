@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 
 	"github.com/docker/docker/client"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 var (

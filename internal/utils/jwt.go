@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 type Claims struct {

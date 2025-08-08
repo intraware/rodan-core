@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/intraware/rodan/utils"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 var AuthRequired gin.HandlerFunc = func(ctx *gin.Context) {

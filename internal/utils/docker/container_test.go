@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/client"
-	"github.com/intraware/rodan/utils/docker"
+	"github.com/intraware/rodan/internal/utils/docker"
 )
 
 var sharedContainerID string

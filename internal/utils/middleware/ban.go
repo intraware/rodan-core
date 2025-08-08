@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/shared"
-	"github.com/intraware/rodan/models"
+	"github.com/intraware/rodan/internal/models"
 )
 
 var BanMiddleware gin.HandlerFunc = func(ctx *gin.Context) {

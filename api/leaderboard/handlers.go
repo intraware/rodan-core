@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 // getUserLeaderboard godoc

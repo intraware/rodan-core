@@ -11,7 +11,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/go-connections/nat"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 func StartContainer(ctx context.Context, containerID string) (err error) {

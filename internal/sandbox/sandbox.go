@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/intraware/rodan/models"
-	"github.com/intraware/rodan/utils/docker"
+	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/utils/docker"
 )
 
 var containerPool = newPool()

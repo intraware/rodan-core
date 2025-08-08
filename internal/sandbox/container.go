@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/intraware/rodan/utils/docker"
+	"github.com/intraware/rodan/internal/utils/docker"
 )
 
 type container struct {

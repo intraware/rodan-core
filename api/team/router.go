@@ -2,7 +2,7 @@ package team
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/intraware/rodan/utils/middleware"
+	"github.com/intraware/rodan/internal/utils/middleware"
 )
 
 func LoadTeam(r *gin.RouterGroup) {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
-	"github.com/intraware/rodan/utils/docker"
+	"github.com/intraware/rodan/internal/utils/docker"
 )
 
 const testImage = "alpine:latest"

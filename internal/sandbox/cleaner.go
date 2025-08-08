@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/intraware/rodan/utils/docker"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/docker"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 type cleaner struct {

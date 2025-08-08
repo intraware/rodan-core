@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/values"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/argon2"

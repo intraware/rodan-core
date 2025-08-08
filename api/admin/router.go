@@ -2,8 +2,8 @@ package admin
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/intraware/rodan/utils/middleware"
 	"github.com/intraware/rodan/api/admin/handlers"
+	"github.com/intraware/rodan/internal/utils/middleware"
 )
 
 func LoadUser(r *gin.RouterGroup) {
