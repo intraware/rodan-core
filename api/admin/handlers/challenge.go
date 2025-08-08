@@ -25,20 +25,20 @@ func GetAllChallenges(ctx *gin.Context) {
 
 	if err := models.DB.Find(&challenges).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "get_all_challenges",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "get_all_challenges",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in getAllChallenges")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
 	}
 
 	auditLog.WithFields(logrus.Fields{
-		"event":   "get_all_challenges",
-		"status":  "success",
-		"count":   len(challenges),
-		"ip":      ctx.ClientIP(),
+		"event":  "get_all_challenges",
+		"status": "success",
+		"count":  len(challenges),
+		"ip":     ctx.ClientIP(),
 	}).Info("Retrieved all challenges successfully")
 	ctx.JSON(http.StatusOK, challenges)
 }
@@ -61,10 +61,10 @@ func AddChallenge(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&challenge); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "add_challenge",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "add_challenge",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in addChallenge")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -72,20 +72,20 @@ func AddChallenge(ctx *gin.Context) {
 
 	if err := models.DB.Create(&challenge).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "add_challenge",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "add_challenge",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in addChallenge")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
 	}
 
 	auditLog.WithFields(logrus.Fields{
-		"event":   "add_challenge",
-		"status":  "success",
+		"event":        "add_challenge",
+		"status":       "success",
 		"challenge_id": challenge.ID,
-		"ip":      ctx.ClientIP(),
+		"ip":           ctx.ClientIP(),
 	}).Info("Challenge added successfully")
 	ctx.JSON(http.StatusOK, challenge)
 }
@@ -108,10 +108,10 @@ func UpdateChallenge(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&challenge); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "update_challenge",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "update_challenge",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in updateChallenge")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -119,20 +119,20 @@ func UpdateChallenge(ctx *gin.Context) {
 
 	if err := models.DB.Save(&challenge).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "update_challenge",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "update_challenge",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in updateChallenge")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
 	}
 
 	auditLog.WithFields(logrus.Fields{
-		"event":   "update_challenge",
-		"status":  "success",
+		"event":        "update_challenge",
+		"status":       "success",
 		"challenge_id": challenge.ID,
-		"ip":      ctx.ClientIP(),
+		"ip":           ctx.ClientIP(),
 	}).Info("Challenge updated successfully")
 	ctx.JSON(http.StatusOK, challenge)
 }
@@ -155,10 +155,10 @@ func DeleteChallenge(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&challenge); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "delete_challenge",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "delete_challenge",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in deleteChallenge")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -166,20 +166,20 @@ func DeleteChallenge(ctx *gin.Context) {
 
 	if err := models.DB.Delete(&challenge).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "delete_challenge",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "delete_challenge",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in deleteChallenge")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
 	}
 
 	auditLog.WithFields(logrus.Fields{
-		"event":   "delete_challenge",
-		"status":  "success",
+		"event":        "delete_challenge",
+		"status":       "success",
 		"challenge_id": challenge.ID,
-		"ip":      ctx.ClientIP(),
+		"ip":           ctx.ClientIP(),
 	}).Info("Challenge deleted successfully")
 	ctx.JSON(http.StatusOK, gin.H{"message": "Challenge deleted successfully"})
 }

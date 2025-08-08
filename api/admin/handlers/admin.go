@@ -28,11 +28,11 @@ func GetAdmin(ctx *gin.Context) {
 
 	if err := models.DB.First(&admin, adminID).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "get_admin_profile",
-			"status":  "failure",
-			"reason":  "admin_not_found",
+			"event":    "get_admin_profile",
+			"status":   "failure",
+			"reason":   "admin_not_found",
 			"admin_id": adminID,
-			"ip":      ctx.ClientIP(),
+			"ip":       ctx.ClientIP(),
 		}).Warn("Admin not found in getAdmin")
 		ctx.JSON(http.StatusNotFound, errorResponse{Error: "Admin not found"})
 		return
@@ -57,10 +57,10 @@ func AddAdmin(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&admin); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "add_admin",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "add_admin",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in addAdmin")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -68,20 +68,20 @@ func AddAdmin(ctx *gin.Context) {
 
 	if err := models.DB.Create(&admin).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "add_admin",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "add_admin",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in addAdmin")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
 	}
 
 	auditLog.WithFields(logrus.Fields{
-		"event":   "add_admin",
-		"status":  "success",
+		"event":    "add_admin",
+		"status":   "success",
 		"admin_id": admin.ID,
-		"ip":      ctx.ClientIP(),
+		"ip":       ctx.ClientIP(),
 	}).Info("Admin added successfully")
 	ctx.JSON(http.StatusCreated, admin)
 }
@@ -105,10 +105,10 @@ func UpdateAdmin(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&admin); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "update_admin",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "update_admin",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in updateAdmin")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -116,20 +116,20 @@ func UpdateAdmin(ctx *gin.Context) {
 
 	if err := models.DB.Model(&admin).Where("id = ?", adminID).Updates(admin).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "update_admin",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "update_admin",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in updateAdmin")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
 	}
 
 	auditLog.WithFields(logrus.Fields{
-		"event":   "update_admin",
-		"status":  "success",
+		"event":    "update_admin",
+		"status":   "success",
 		"admin_id": adminID,
-		"ip":      ctx.ClientIP(),
+		"ip":       ctx.ClientIP(),
 	}).Info("Admin updated successfully")
 	ctx.JSON(http.StatusOK, admin)
 }
@@ -150,20 +150,20 @@ func DeleteAdmin(ctx *gin.Context) {
 
 	if err := models.DB.Delete(&models.Admin{}, adminID).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "delete_admin",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "delete_admin",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in deleteAdmin")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
 	}
 
 	auditLog.WithFields(logrus.Fields{
-		"event":   "delete_admin",
-		"status":  "success",
+		"event":    "delete_admin",
+		"status":   "success",
 		"admin_id": adminID,
-		"ip":      ctx.ClientIP(),
+		"ip":       ctx.ClientIP(),
 	}).Info("Admin deleted successfully")
 	ctx.JSON(http.StatusNoContent, nil)
 }
@@ -185,10 +185,10 @@ func flush_cache(ctx *gin.Context) {
 	cacheType := ctx.Query("type")
 	if cacheType == "" {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in flushCache")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -201,10 +201,10 @@ func flush_cache(ctx *gin.Context) {
 		shared.StaticConfig.Reset()
 		shared.TeamSolvedCache.Reset()
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "success",
-			"cache":   "all",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "success",
+			"cache":  "all",
+			"ip":     ctx.ClientIP(),
 		}).Info("All caches flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "All caches flushed successfully"})
 		return
@@ -213,72 +213,72 @@ func flush_cache(ctx *gin.Context) {
 	case "user":
 		shared.UserCache.Reset()
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "success",
-			"cache":   "user",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "success",
+			"cache":  "user",
+			"ip":     ctx.ClientIP(),
 		}).Info("User cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "User cache flushed successfully"})
 	case "team":
 		shared.TeamCache.Reset()
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "success",
-			"cache":   "team",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "success",
+			"cache":  "team",
+			"ip":     ctx.ClientIP(),
 		}).Info("Team cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "Team cache flushed successfully"})
 	case "challenge":
 		shared.ChallengeCache.Reset()
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "success",
-			"cache":   "challenge",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "success",
+			"cache":  "challenge",
+			"ip":     ctx.ClientIP(),
 		}).Info("Challenge cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "Challenge cache flushed successfully"})
 	case "login":
 		shared.LoginCache.Reset()
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "success",
-			"cache":   "login",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "success",
+			"cache":  "login",
+			"ip":     ctx.ClientIP(),
 		}).Info("Login cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "Login cache flushed successfully"})
 	case "static_config":
 		shared.StaticConfig.Reset()
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "success",
-			"cache":   "static_config",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "success",
+			"cache":  "static_config",
+			"ip":     ctx.ClientIP(),
 		}).Info("Static config cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "Static config cache flushed successfully"})
 	case "team_solved":
 		shared.TeamSolvedCache.Reset()
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "success",
-			"cache":   "team_solved",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "success",
+			"cache":  "team_solved",
+			"ip":     ctx.ClientIP(),
 		}).Info("Team solved cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "Team solved cache flushed successfully"})
 	case "reset_password":
 		shared.ResetPasswordCache.Reset()
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "success",
-			"cache":   "reset_password",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "success",
+			"cache":  "reset_password",
+			"ip":     ctx.ClientIP(),
 		}).Info("Reset password cache flushed successfully")
 		ctx.JSON(http.StatusOK, successResponse{Message: "Reset password cache flushed successfully"})
 	default:
 		auditLog.WithFields(logrus.Fields{
-			"event":   "flush_cache",
-			"status":  "failure",
-			"reason":  "invalid_cache_type",
-			"ip":      ctx.ClientIP(),
+			"event":  "flush_cache",
+			"status": "failure",
+			"reason": "invalid_cache_type",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid cache type in flushCache")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid cache type"})
 		return

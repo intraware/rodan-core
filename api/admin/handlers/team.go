@@ -25,20 +25,20 @@ func GetAllTeams(ctx *gin.Context) {
 
 	if err := models.DB.Find(&teams).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "get_all_teams",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "get_all_teams",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in getAllTeams")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
 	}
 
 	auditLog.WithFields(logrus.Fields{
-		"event":   "get_all_teams",
-		"status":  "success",
-		"count":   len(teams),
-		"ip":      ctx.ClientIP(),
+		"event":  "get_all_teams",
+		"status": "success",
+		"count":  len(teams),
+		"ip":     ctx.ClientIP(),
 	}).Info("Retrieved all teams successfully")
 	ctx.JSON(http.StatusOK, teams)
 }
@@ -61,10 +61,10 @@ func UpdateTeam(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&team); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "update_team",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "update_team",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in updateTeam")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -72,10 +72,10 @@ func UpdateTeam(ctx *gin.Context) {
 
 	if err := models.DB.Save(&team).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "update_team",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "update_team",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in updateTeam")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -108,10 +108,10 @@ func DeleteTeam(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&team); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "delete_team",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "delete_team",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in deleteTeam")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -119,10 +119,10 @@ func DeleteTeam(ctx *gin.Context) {
 
 	if err := models.DB.Delete(&team).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "delete_team",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "delete_team",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in deleteTeam")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -155,10 +155,10 @@ func BanTeam(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&team); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "ban_team",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "ban_team",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in banTeam")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -166,10 +166,10 @@ func BanTeam(ctx *gin.Context) {
 
 	if err := models.DB.Model(&team).Where("id = ?", team.ID).Update("ban", true).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "ban_team",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "ban_team",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in banTeam")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -202,10 +202,10 @@ func UnbanTeam(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&team); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "unban_team",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "unban_team",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in unbanTeam")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -213,10 +213,10 @@ func UnbanTeam(ctx *gin.Context) {
 
 	if err := models.DB.Model(&team).Where("id = ?", team.ID).Update("ban", false).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "unban_team",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "unban_team",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in unbanTeam")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -249,10 +249,10 @@ func BlacklistTeam(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&team); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "blacklist_team",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "blacklist_team",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in blacklistTeam")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -260,10 +260,10 @@ func BlacklistTeam(ctx *gin.Context) {
 
 	if err := models.DB.Model(&team).Where("id = ?", team.ID).Update("blacklist", true).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "blacklist_team",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "blacklist_team",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in blacklistTeam")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -296,10 +296,10 @@ func UnblacklistTeam(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&team); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "unblacklist_team",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "unblacklist_team",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in unblacklistTeam")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -307,10 +307,10 @@ func UnblacklistTeam(ctx *gin.Context) {
 
 	if err := models.DB.Model(&team).Where("id = ?", team.ID).Update("blacklist", false).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "unblacklist_team",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "unblacklist_team",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in unblacklistTeam")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return

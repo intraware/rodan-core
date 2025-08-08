@@ -25,10 +25,10 @@ func GetAllUsers(ctx *gin.Context) {
 
 	if err := models.DB.Find(&users).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "get_all_users",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "get_all_users",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in getAllUsers")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -55,10 +55,10 @@ func UpdateUser(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "update_user",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "update_user",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in updateUser")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -66,10 +66,10 @@ func UpdateUser(ctx *gin.Context) {
 
 	if err := models.DB.Save(&user).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "update_user",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "update_user",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in updateUser")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -102,10 +102,10 @@ func DeleteUser(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "delete_user",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "delete_user",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in deleteUser")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -113,10 +113,10 @@ func DeleteUser(ctx *gin.Context) {
 
 	if err := models.DB.Delete(&user).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "delete_user",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "delete_user",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in deleteUser")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -149,10 +149,10 @@ func BanUser(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "ban_user",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "ban_user",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in banUser")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -161,10 +161,10 @@ func BanUser(ctx *gin.Context) {
 	user.Ban = true
 	if err := models.DB.Save(&user).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "ban_user",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "ban_user",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in banUser")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -197,10 +197,10 @@ func UnbanUser(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "unban_user",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "unban_user",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in unbanUser")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -209,10 +209,10 @@ func UnbanUser(ctx *gin.Context) {
 	user.Ban = false
 	if err := models.DB.Save(&user).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "unban_user",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "unban_user",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in unbanUser")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -245,10 +245,10 @@ func BlacklistUser(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "blacklist_user",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "blacklist_user",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in blacklistUser")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -257,10 +257,10 @@ func BlacklistUser(ctx *gin.Context) {
 	user.Blacklist = true
 	if err := models.DB.Save(&user).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "blacklist_user",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "blacklist_user",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in blacklistUser")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
@@ -293,10 +293,10 @@ func UnblacklistUser(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "unblacklist_user",
-			"status":  "failure",
-			"reason":  "invalid_request",
-			"ip":      ctx.ClientIP(),
+			"event":  "unblacklist_user",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in unblacklistUser")
 		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
 		return
@@ -305,10 +305,10 @@ func UnblacklistUser(ctx *gin.Context) {
 	user.Blacklist = false
 	if err := models.DB.Save(&user).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
-			"event":   "unblacklist_user",
-			"status":  "failure",
-			"reason":  "database_error",
-			"ip":      ctx.ClientIP(),
+			"event":  "unblacklist_user",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
 		}).Error("Database error in unblacklistUser")
 		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
 		return
