@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
 	"github.com/intraware/rodan/internal/utils/values"
 	"github.com/sirupsen/logrus"
@@ -24,9 +25,9 @@ import (
 // @Produce      json
 // @Param        user  body      signUpRequest   true  "User registration data"
 // @Success      201   {object}  authResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      409   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      409   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /auth/signup [post]
 func signUp(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -38,11 +39,11 @@ func signUp(ctx *gin.Context) {
 			"reason": "invalid_json",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid signup input")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Failed to parse the body"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Failed to parse the body"})
 		return
 	}
 	if !values.GetConfig().App.CompiledEmail.MatchString(req.Email) {
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Bad email ID provided"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Bad email ID provided"})
 		return
 	}
 	user := models.User{
@@ -62,7 +63,7 @@ func signUp(ctx *gin.Context) {
 				"github":   req.GitHubUsername,
 				"ip":       ctx.ClientIP(),
 			}).Warn("User already exists during signup")
-			ctx.JSON(http.StatusConflict, errorResponse{Error: "User with same email or username or github username exists"})
+			ctx.JSON(http.StatusConflict, types.ErrorResponse{Error: "User with same email or username or github username exists"})
 			return
 		}
 		auditLog.WithFields(logrus.Fields{
@@ -75,7 +76,7 @@ func signUp(ctx *gin.Context) {
 			"ip":       ctx.ClientIP(),
 			"error":    err.Error(),
 		}).Error("Failed to create user in DB during signup")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to create user"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to create user"})
 		return
 	}
 	token, err := utils.GenerateJWT(0, user.ID, user.Username, values.GetConfig().Server.Security.JWTSecret)
@@ -89,7 +90,7 @@ func signUp(ctx *gin.Context) {
 			"ip":       ctx.ClientIP(),
 			"error":    err.Error(),
 		}).Error("Failed to generate JWT token during signup")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to generate token"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to generate token"})
 		return
 	}
 	userInfo := userInfo{
@@ -122,10 +123,10 @@ func signUp(ctx *gin.Context) {
 // @Produce      json
 // @Param        credentials  body      loginRequest  true  "Login credentials"
 // @Success      200          {object}  authResponse
-// @Failure      400          {object}  errorResponse
-// @Failure      401          {object}  errorResponse
-// @Failure      403          {object}  errorResponse
-// @Failure      500          {object}  errorResponse
+// @Failure      400          {object}  types.ErrorResponse
+// @Failure      401          {object}  types.ErrorResponse
+// @Failure      403          {object}  types.ErrorResponse
+// @Failure      500          {object}  types.ErrorResponse
 // @Router       /auth/login [post]
 func login(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -137,7 +138,7 @@ func login(ctx *gin.Context) {
 			"reason": "invalid_json",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid login input")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Failed to parse request body"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Failed to parse request body"})
 		return
 	}
 	var user models.User
@@ -155,7 +156,7 @@ func login(ctx *gin.Context) {
 					"username": req.Username,
 					"ip":       ctx.ClientIP(),
 				}).Warn("User not found during login")
-				ctx.JSON(http.StatusUnauthorized, errorResponse{Error: "Invalid username or password"})
+				ctx.JSON(http.StatusUnauthorized, types.ErrorResponse{Error: "Invalid username or password"})
 				return
 			}
 			auditLog.WithFields(logrus.Fields{
@@ -166,7 +167,7 @@ func login(ctx *gin.Context) {
 				"ip":       ctx.ClientIP(),
 				"error":    err.Error(),
 			}).Error("Database error during login")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 			return
 		} else {
 			shared.LoginCache.Set(req.Username, user)
@@ -181,7 +182,7 @@ func login(ctx *gin.Context) {
 			"username": user.Username,
 			"ip":       ctx.ClientIP(),
 		}).Warn("Banned user attempted login")
-		ctx.JSON(http.StatusForbidden, errorResponse{Error: "Account is banned"})
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Account is banned"})
 		return
 	}
 	if user.Team.Ban {
@@ -195,7 +196,7 @@ func login(ctx *gin.Context) {
 			"team_name": user.Team.Name,
 			"ip":        ctx.ClientIP(),
 		}).Warn("Banned user attempted login")
-		ctx.JSON(http.StatusForbidden, errorResponse{Error: "Team is banned"})
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Team is banned"})
 		return
 	}
 	isValid, err := user.ComparePassword(req.Password)
@@ -215,7 +216,7 @@ func login(ctx *gin.Context) {
 				}
 			},
 		}).Warn("Invalid password during login")
-		ctx.JSON(http.StatusUnauthorized, errorResponse{Error: "Invalid username or password"})
+		ctx.JSON(http.StatusUnauthorized, types.ErrorResponse{Error: "Invalid username or password"})
 		return
 	}
 	token, err := utils.GenerateJWT(*user.TeamID, user.ID, user.Username, values.GetConfig().Server.Security.JWTSecret)
@@ -229,7 +230,7 @@ func login(ctx *gin.Context) {
 			"ip":       ctx.ClientIP(),
 			"error":    err.Error(),
 		}).Error("Failed to generate JWT token during login")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to generate token"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to generate token"})
 		return
 	}
 	userInfo := userInfo{
@@ -263,10 +264,10 @@ func login(ctx *gin.Context) {
 // @Produce      json
 // @Param        request  body      forgotPasswordRequest  true  "Forgot password request"
 // @Success      200      {object}  resetTokenResponse
-// @Failure      400      {object}  errorResponse
-// @Failure      401      {object}  errorResponse
-// @Failure      404      {object}  errorResponse
-// @Failure      500      {object}  errorResponse
+// @Failure      400      {object}  types.ErrorResponse
+// @Failure      401      {object}  types.ErrorResponse
+// @Failure      404      {object}  types.ErrorResponse
+// @Failure      500      {object}  types.ErrorResponse
 // @Router       /auth/forgot-password [post]
 func forgotPassword(ctx *gin.Context) {
 	var input forgotPasswordRequest
@@ -400,9 +401,9 @@ func forgotPassword(ctx *gin.Context) {
 // @Param        token    path      string               true  "Reset token"
 // @Param        request  body      resetPasswordRequest true  "New password data"
 // @Success      200      {object}  successResponse
-// @Failure      400      {object}  errorResponse
-// @Failure      401      {object}  errorResponse
-// @Failure      500      {object}  errorResponse
+// @Failure      400      {object}  types.ErrorResponse
+// @Failure      401      {object}  types.ErrorResponse
+// @Failure      500      {object}  types.ErrorResponse
 // @Router       /auth/reset-password/{token} [post]
 func resetPassword(ctx *gin.Context) {
 	token := ctx.Param("token")

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
 	"github.com/intraware/rodan/internal/utils/values"
 	"github.com/sirupsen/logrus"
@@ -23,7 +24,7 @@ func createTeam(ctx *gin.Context) {
 			"reason": "invalid_request_body",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Failed to parse team creation request")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: err.Error()})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: err.Error()})
 		return
 	}
 	userID := ctx.GetInt("user_id")
@@ -39,7 +40,7 @@ func createTeam(ctx *gin.Context) {
 				"user_id": userID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("User not found during team creation")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 			return
 		}
 	}
@@ -52,7 +53,7 @@ func createTeam(ctx *gin.Context) {
 			"username": user.Username,
 			"ip":       ctx.ClientIP(),
 		}).Warn("User already in a team")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "User is already in a team"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "User is already in a team"})
 		return
 	}
 	team := models.Team{
@@ -68,7 +69,7 @@ func createTeam(ctx *gin.Context) {
 			"username": user.Username,
 			"ip":       ctx.ClientIP(),
 		}).Error("Failed to create team")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to create team"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to create team"})
 		return
 	}
 	user.TeamID = &team.ID
@@ -83,7 +84,7 @@ func createTeam(ctx *gin.Context) {
 			"team_id":  team.ID,
 			"ip":       ctx.ClientIP(),
 		}).Error("Failed to associate user with team after creation")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to add user to team"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to add user to team"})
 		return
 	} else {
 		shared.UserCache.Delete(user.ID)
@@ -99,7 +100,7 @@ func createTeam(ctx *gin.Context) {
 			"team_id":  team.ID,
 			"ip":       ctx.ClientIP(),
 		}).Error("Failed to reload created team")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to load team"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to load team"})
 		return
 	}
 	shared.TeamCache.Set(team.ID, teamResponse)
@@ -127,7 +128,7 @@ func joinTeam(ctx *gin.Context) {
 			"param":  idStr,
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid team ID format")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid Team ID"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid Team ID"})
 		return
 	}
 	var req joinTeamRequest
@@ -138,7 +139,7 @@ func joinTeam(ctx *gin.Context) {
 			"reason": "invalid_request_body",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Failed to bind joinTeam request")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: err.Error()})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: err.Error()})
 		return
 	}
 	userID := ctx.GetInt("user_id")
@@ -154,7 +155,7 @@ func joinTeam(ctx *gin.Context) {
 				"user_id": userID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("User not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -168,7 +169,7 @@ func joinTeam(ctx *gin.Context) {
 			"username": user.Username,
 			"ip":       ctx.ClientIP(),
 		}).Warn("User is already in a team")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "User is already in a team"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "User is already in a team"})
 		return
 	}
 	var team models.Team
@@ -186,10 +187,10 @@ func joinTeam(ctx *gin.Context) {
 				"code":    req.Code,
 				"ip":      ctx.ClientIP(),
 			}).Warn("Invalid team join code or team not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "Invalid team code"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Invalid team code"})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 	shared.TeamCache.Set(team.ID, team)
@@ -203,7 +204,7 @@ func joinTeam(ctx *gin.Context) {
 			"username": user.Username,
 			"ip":       ctx.ClientIP(),
 		}).Warn("Invalid code provided")
-		ctx.JSON(http.StatusUnauthorized, errorResponse{Error: "Invalid Code provided"})
+		ctx.JSON(http.StatusUnauthorized, types.ErrorResponse{Error: "Invalid Code provided"})
 		return
 	}
 	if team.Ban {
@@ -216,12 +217,12 @@ func joinTeam(ctx *gin.Context) {
 			"username": user.Username,
 			"ip":       ctx.ClientIP(),
 		}).Warn("Attempt to join a banned team")
-		ctx.JSON(http.StatusForbidden, errorResponse{Error: "Team is banned"})
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Team is banned"})
 		return
 	}
 	teamMaxCount := values.GetConfig().App.TeamSize
 	if err := models.DB.Preload("Members").First(&team).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to retrieve team members"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to retrieve team members"})
 		return
 	}
 	if len(team.Members) >= teamMaxCount {
@@ -234,7 +235,7 @@ func joinTeam(ctx *gin.Context) {
 			"username": user.Username,
 			"ip":       ctx.ClientIP(),
 		}).Warn("Team max size reached")
-		ctx.JSON(http.StatusConflict, errorResponse{Error: "Team max size reached"})
+		ctx.JSON(http.StatusConflict, types.ErrorResponse{Error: "Team max size reached"})
 		return
 	}
 	user.TeamID = &team.ID
@@ -247,13 +248,13 @@ func joinTeam(ctx *gin.Context) {
 			"team_id": team.ID,
 			"ip":      ctx.ClientIP(),
 		}).Error("Failed to join team")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to join team"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to join team"})
 		return
 	}
 	shared.UserCache.Delete(user.ID)
 	var teamResponse models.Team
 	if err := models.DB.Preload("Members").First(&teamResponse, team.ID).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to load team"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to load team"})
 		return
 	}
 	shared.TeamCache.Set(team.ID, teamResponse)
@@ -286,7 +287,7 @@ func getMyTeam(ctx *gin.Context) {
 				"user_id": userID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("User not found in getMyTeam")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -299,7 +300,7 @@ func getMyTeam(ctx *gin.Context) {
 			"user_id": user.ID,
 			"ip":      ctx.ClientIP(),
 		}).Warn("User is not in a team")
-		ctx.JSON(http.StatusNotFound, errorResponse{Error: "User is not in a team"})
+		ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User is not in a team"})
 		return
 	}
 	var team models.Team
@@ -317,7 +318,7 @@ func getMyTeam(ctx *gin.Context) {
 				"team_id": *user.TeamID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("Team not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "Team not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Team not found"})
 			return
 		}
 		shared.TeamCache.Set(*user.TeamID, team)
@@ -346,7 +347,7 @@ func getTeam(ctx *gin.Context) {
 			"param":  teamIDStr,
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid team ID")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid team ID"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid team ID"})
 		return
 	}
 	var team models.Team
@@ -364,7 +365,7 @@ func getTeam(ctx *gin.Context) {
 					"team_id": teamID,
 					"ip":      ctx.ClientIP(),
 				}).Warn("Team not found")
-				ctx.JSON(http.StatusNotFound, errorResponse{Error: "Team not found"})
+				ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Team not found"})
 				return
 			}
 			auditLog.WithFields(logrus.Fields{
@@ -374,7 +375,7 @@ func getTeam(ctx *gin.Context) {
 				"team_id": teamID,
 				"ip":      ctx.ClientIP(),
 			}).Error("Failed to query team from DB")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 			return
 		}
 		shared.TeamCache.Set(teamID, team)
@@ -437,7 +438,7 @@ func editTeam(ctx *gin.Context) {
 			"reason": "invalid_request_body",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Failed to parse request body")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Failed to parse the body"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Failed to parse the body"})
 		return
 	}
 	userID := ctx.GetInt("user_id")
@@ -453,7 +454,7 @@ func editTeam(ctx *gin.Context) {
 				"user_id": userID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("User not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -466,7 +467,7 @@ func editTeam(ctx *gin.Context) {
 			"user_id": user.ID,
 			"ip":      ctx.ClientIP(),
 		}).Warn("User not in a team")
-		ctx.JSON(http.StatusNotFound, errorResponse{Error: "User is not in a team"})
+		ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User is not in a team"})
 		return
 	}
 	var team models.Team
@@ -484,7 +485,7 @@ func editTeam(ctx *gin.Context) {
 				"team_id": *user.TeamID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("Team not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "Team not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Team not found"})
 			return
 		}
 		shared.TeamCache.Set(*user.TeamID, team)
@@ -499,7 +500,7 @@ func editTeam(ctx *gin.Context) {
 			"username": user.Username,
 			"ip":       ctx.ClientIP(),
 		}).Warn("Non-leader tried to edit team")
-		ctx.JSON(http.StatusForbidden, errorResponse{Error: "Only the team leader can edit the team"})
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Only the team leader can edit the team"})
 		return
 	}
 	updates := logrus.Fields{
@@ -526,7 +527,7 @@ func editTeam(ctx *gin.Context) {
 				"user_id":          user.ID,
 				"ip":               ctx.ClientIP(),
 			}).Warn("Requested new leader not found in team")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "New leader not found in the team"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "New leader not found in the team"})
 			return
 		}
 		team.LeaderID = newLeader.ID
@@ -542,13 +543,13 @@ func editTeam(ctx *gin.Context) {
 			"team_id": team.ID,
 			"ip":      ctx.ClientIP(),
 		}).Error("Failed to update team")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to update team"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to update team"})
 		return
 	}
 	shared.TeamCache.Set(team.ID, team)
 	updates["status"] = "success"
 	auditLog.WithFields(updates).Info("Team updated successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "Team updated successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Team updated successfully"})
 }
 
 func deleteTeam(ctx *gin.Context) {
@@ -566,7 +567,7 @@ func deleteTeam(ctx *gin.Context) {
 				"user_id": userID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("User not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -579,7 +580,7 @@ func deleteTeam(ctx *gin.Context) {
 			"user_id": user.ID,
 			"ip":      ctx.ClientIP(),
 		}).Warn("User not in a team")
-		ctx.JSON(http.StatusNotFound, errorResponse{Error: "User is not in a team"})
+		ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User is not in a team"})
 		return
 	}
 	var team models.Team
@@ -597,7 +598,7 @@ func deleteTeam(ctx *gin.Context) {
 				"team_id": *user.TeamID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("Team not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "Team not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Team not found"})
 			return
 		}
 		shared.TeamCache.Set(*user.TeamID, team)
@@ -611,7 +612,7 @@ func deleteTeam(ctx *gin.Context) {
 			"team_id": team.ID,
 			"ip":      ctx.ClientIP(),
 		}).Warn("Non-leader tried to delete team")
-		ctx.JSON(http.StatusForbidden, errorResponse{Error: "Only the team leader can delete the team"})
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Only the team leader can delete the team"})
 		return
 	}
 	if err := models.DB.Delete(&team).Error; err != nil {
@@ -623,7 +624,7 @@ func deleteTeam(ctx *gin.Context) {
 			"team_id": team.ID,
 			"ip":      ctx.ClientIP(),
 		}).Error("Failed to delete team from DB")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to delete team from database"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to delete team from database"})
 		return
 	}
 	shared.TeamCache.Delete(team.ID)
@@ -638,7 +639,7 @@ func deleteTeam(ctx *gin.Context) {
 		"ip":      ctx.ClientIP(),
 		"cache":   cacheHit,
 	}).Info("Team deleted successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "Deleted team successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Deleted team successfully"})
 }
 
 func leaveTeam(ctx *gin.Context) {
@@ -656,7 +657,7 @@ func leaveTeam(ctx *gin.Context) {
 				"user_id": userID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("User not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -669,7 +670,7 @@ func leaveTeam(ctx *gin.Context) {
 			"user_id": user.ID,
 			"ip":      ctx.ClientIP(),
 		}).Warn("User is not in a team")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "User is not in a team"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "User is not in a team"})
 		return
 	}
 	var team models.Team
@@ -687,7 +688,7 @@ func leaveTeam(ctx *gin.Context) {
 				"team_id": *user.TeamID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("Team not found")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "Team not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Team not found"})
 			return
 		}
 		shared.TeamCache.Set(*user.TeamID, team)
@@ -701,7 +702,7 @@ func leaveTeam(ctx *gin.Context) {
 			"team_id": team.ID,
 			"ip":      ctx.ClientIP(),
 		}).Warn("Leader tried to leave team")
-		ctx.JSON(http.StatusForbidden, errorResponse{Error: "Team leader cannot leave the team. Transfer leadership or delete the team."})
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Team leader cannot leave the team. Transfer leadership or delete the team."})
 		return
 	}
 	if err := models.DB.Model(&user).Update("team_id", nil).Error; err != nil {
@@ -713,7 +714,7 @@ func leaveTeam(ctx *gin.Context) {
 			"team_id": team.ID,
 			"ip":      ctx.ClientIP(),
 		}).Error("Failed to leave team")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to leave team"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to leave team"})
 		return
 	}
 	shared.UserCache.Delete(user.ID)
@@ -732,5 +733,5 @@ func leaveTeam(ctx *gin.Context) {
 		"ip":      ctx.ClientIP(),
 		"cache":   cacheHit,
 	}).Info("User left the team")
-	ctx.JSON(http.StatusOK, successResponse{Message: "Successfully left the team"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Successfully left the team"})
 }

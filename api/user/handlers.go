@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -31,7 +32,7 @@ func getMyProfile(ctx *gin.Context) {
 				"user_id": userID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("User not found in getMyProfile")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 			return
 		} else {
 			shared.UserCache.Set(user.ID, user)
@@ -67,7 +68,7 @@ func getUserProfile(ctx *gin.Context) {
 			"input":  userIDStr,
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid user ID in getUserProfile")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid user ID"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid user ID"})
 		return
 	}
 	var user models.User
@@ -85,7 +86,7 @@ func getUserProfile(ctx *gin.Context) {
 					"user_id": userID,
 					"ip":      ctx.ClientIP(),
 				}).Warn("User not found in getUserProfile")
-				ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+				ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 				return
 			}
 			auditLog.WithFields(logrus.Fields{
@@ -96,7 +97,7 @@ func getUserProfile(ctx *gin.Context) {
 				"ip":      ctx.ClientIP(),
 				"error":   err.Error(),
 			}).Error("Database error in getUserProfile")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 			return
 		} else {
 			shared.UserCache.Set(userID, user)
@@ -131,7 +132,7 @@ func updateProfile(ctx *gin.Context) {
 			"user_id": userID,
 			"ip":      ctx.ClientIP(),
 		}).Warn("Invalid input in updateProfile")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid input"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid input"})
 		return
 	}
 	var user models.User
@@ -148,7 +149,7 @@ func updateProfile(ctx *gin.Context) {
 				"user_id": userID,
 				"ip":      ctx.ClientIP(),
 			}).Warn("User not found in updateProfile")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 			return
 		}
 	}
@@ -175,7 +176,7 @@ func updateProfile(ctx *gin.Context) {
 				"cache":        cacheHit,
 				"error":        err.Error(),
 			}).Warn("Username or GitHub username already in use in updateProfile")
-			ctx.JSON(http.StatusConflict, errorResponse{Error: "Username or GitHub username already in use"})
+			ctx.JSON(http.StatusConflict, types.ErrorResponse{Error: "Username or GitHub username already in use"})
 			return
 		}
 		auditLog.WithFields(logrus.Fields{
@@ -186,7 +187,7 @@ func updateProfile(ctx *gin.Context) {
 			"ip":      ctx.ClientIP(),
 			"error":   err.Error(),
 		}).Error("Failed to update profile in DB")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to update profile"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to update profile"})
 		return
 	}
 	shared.UserCache.Delete(userID)
@@ -201,7 +202,7 @@ func updateProfile(ctx *gin.Context) {
 		"ip":           ctx.ClientIP(),
 		"cache":        cacheHit,
 	}).Info("Profile updated successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "Profile updated successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Profile updated successfully"})
 }
 
 func deleteProfile(ctx *gin.Context) {
@@ -217,7 +218,7 @@ func deleteProfile(ctx *gin.Context) {
 			"ip":      ctx.ClientIP(),
 			"error":   result.Error.Error(),
 		}).Error("Failed to delete user in deleteProfile")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Internal server error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Internal server error"})
 		return
 	}
 	shared.UserCache.Delete(userID)
@@ -229,7 +230,7 @@ func deleteProfile(ctx *gin.Context) {
 			"user_id": userID,
 			"ip":      ctx.ClientIP(),
 		}).Warn("User not found or already deleted in deleteProfile")
-		ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found or already deleted"})
+		ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found or already deleted"})
 		return
 	}
 	auditLog.WithFields(logrus.Fields{
@@ -238,7 +239,7 @@ func deleteProfile(ctx *gin.Context) {
 		"user_id": userID,
 		"ip":      ctx.ClientIP(),
 	}).Info("User deleted successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "User deleted successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "User deleted successfully"})
 }
 
 func profileTOTP(ctx *gin.Context) {
@@ -259,7 +260,7 @@ func profileTOTP(ctx *gin.Context) {
 				"ip":      ctx.ClientIP(),
 				"error":   err.Error(),
 			}).Error("Failed to fetch user in profileTOTP")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to fetch user"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to fetch user"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -275,7 +276,7 @@ func profileTOTP(ctx *gin.Context) {
 			"ip":      ctx.ClientIP(),
 			"error":   err.Error(),
 		}).Error("Failed to generate QR code in profileTOTP")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to generate QR code"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to generate QR code"})
 		return
 	}
 	auditLog.WithFields(logrus.Fields{
@@ -307,7 +308,7 @@ func profileBackupCode(ctx *gin.Context) {
 				"ip":      ctx.ClientIP(),
 				"error":   err.Error(),
 			}).Error("Failed to fetch user in profileBackupCode")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to fetch user"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to fetch user"})
 			return
 		}
 		shared.UserCache.Set(userID, user)

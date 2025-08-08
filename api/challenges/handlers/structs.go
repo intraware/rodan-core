@@ -1,9 +1,5 @@
 package handlers
 
-type errorResponse struct {
-	Error string `json:"error" example:"Something went wrong"`
-}
-
 type challengeItem struct {
 	ID    int    `json:"id"`
 	Title string `json:"title"`

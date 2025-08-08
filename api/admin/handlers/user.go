@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -17,7 +18,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  []models.User
-// @Failure      500  {object}  errorResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/user/all [get]
 func GetAllUsers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -30,7 +31,7 @@ func GetAllUsers(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in getAllUsers")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -46,8 +47,8 @@ func GetAllUsers(ctx *gin.Context) {
 // @Produce      json
 // @Param        user  body      models.User  true  "User object"
 // @Success      200   {object}  models.User
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/user/edit [patch]
 func UpdateUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -60,7 +61,7 @@ func UpdateUser(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in updateUser")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -71,7 +72,7 @@ func UpdateUser(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in updateUser")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -93,8 +94,8 @@ func UpdateUser(ctx *gin.Context) {
 // @Produce      json
 // @Param        user  body      models.User  true  "User object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/user/delete [delete]
 func DeleteUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -107,7 +108,7 @@ func DeleteUser(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in deleteUser")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -118,7 +119,7 @@ func DeleteUser(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in deleteUser")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -140,8 +141,8 @@ func DeleteUser(ctx *gin.Context) {
 // @Produce      json
 // @Param        user  body      models.User  true  "User object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/user/ban [post]
 func BanUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -154,7 +155,7 @@ func BanUser(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in banUser")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -166,7 +167,7 @@ func BanUser(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in banUser")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -188,8 +189,8 @@ func BanUser(ctx *gin.Context) {
 // @Produce      json
 // @Param        user  body      models.User  true  "User object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/user/unban [post]
 func UnbanUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -202,7 +203,7 @@ func UnbanUser(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in unbanUser")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -214,7 +215,7 @@ func UnbanUser(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in unbanUser")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -236,8 +237,8 @@ func UnbanUser(ctx *gin.Context) {
 // @Produce      json
 // @Param        user  body      models.User  true  "User object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/user/blacklist [post]
 func BlacklistUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -250,7 +251,7 @@ func BlacklistUser(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in blacklistUser")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -262,7 +263,7 @@ func BlacklistUser(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in blacklistUser")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -284,8 +285,8 @@ func BlacklistUser(ctx *gin.Context) {
 // @Produce      json
 // @Param        user  body      models.User  true  "User object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/user/unblacklist [post]
 func UnblacklistUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -298,7 +299,7 @@ func UnblacklistUser(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in unblacklistUser")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -310,7 +311,7 @@ func UnblacklistUser(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in unblacklistUser")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 

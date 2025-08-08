@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -17,7 +18,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  []models.Challenge
-// @Failure      500  {object}  errorResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/challenge/all [get]
 func GetAllChallenges(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -30,7 +31,7 @@ func GetAllChallenges(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in getAllChallenges")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -52,8 +53,8 @@ func GetAllChallenges(ctx *gin.Context) {
 // @Produce      json
 // @Param        challenge  body      models.Challenge  true  "Challenge object"
 // @Success      200        {object}  models.Challenge
-// @Failure      400        {object}  errorResponse
-// @Failure      500        {object}  errorResponse
+// @Failure      400        {object}  types.ErrorResponse
+// @Failure      500        {object}  types.ErrorResponse
 // @Router       /admin/challenge/add [post]
 func AddChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -66,7 +67,7 @@ func AddChallenge(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in addChallenge")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -77,7 +78,7 @@ func AddChallenge(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in addChallenge")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -99,8 +100,8 @@ func AddChallenge(ctx *gin.Context) {
 // @Produce      json
 // @Param        challenge  body      models.Challenge  true  "Challenge object"
 // @Success      200        {object}  models.Challenge
-// @Failure      400        {object}  errorResponse
-// @Failure      500        {object}  errorResponse
+// @Failure      400        {object}  types.ErrorResponse
+// @Failure      500        {object}  types.ErrorResponse
 // @Router       /admin/challenge/edit [patch]
 func UpdateChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -113,7 +114,7 @@ func UpdateChallenge(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in updateChallenge")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -124,7 +125,7 @@ func UpdateChallenge(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in updateChallenge")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -146,8 +147,8 @@ func UpdateChallenge(ctx *gin.Context) {
 // @Produce      json
 // @Param        challenge  body      models.Challenge  true  "Challenge object"
 // @Success      200        {object}  successResponse
-// @Failure      400        {object}  errorResponse
-// @Failure      500        {object}  errorResponse
+// @Failure      400        {object}  types.ErrorResponse
+// @Failure      500        {object}  types.ErrorResponse
 // @Router       /admin/challenge/delete [delete]
 func DeleteChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -160,7 +161,7 @@ func DeleteChallenge(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in deleteChallenge")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -171,7 +172,7 @@ func DeleteChallenge(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in deleteChallenge")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 

@@ -25,10 +25,6 @@ type userInfo struct {
 	TeamID         *int   `json:"team_id" example:"1"`
 }
 
-type errorResponse struct {
-	Error string `json:"error" example:"Something went wrong"`
-}
-
 type resetPasswordRequest struct {
 	Password string `json:"password" example:"MyNewStrongPassword" binding:"required,min=8"`
 }

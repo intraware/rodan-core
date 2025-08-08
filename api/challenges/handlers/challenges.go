@@ -12,6 +12,7 @@ import (
 	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/internal/models"
 	"github.com/intraware/rodan/internal/sandbox"
+	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
 	"github.com/intraware/rodan/internal/utils/values"
 	"github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  []models.Challenge
-// @Failure      500  {object}  errorResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /challenges [get]
 func GetChallengeList(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -39,7 +40,7 @@ func GetChallengeList(ctx *gin.Context) {
 			"ip":     ctx.ClientIP(),
 			"error":  err.Error(),
 		}).Error("Failed to fetch challenges")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to fetch challenges"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to fetch challenges"})
 		return
 	}
 	var challengeList []challengeItem
@@ -67,8 +68,8 @@ func GetChallengeList(ctx *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Challenge ID"
 // @Success      200  {object}  models.Challenge
-// @Failure      404  {object}  errorResponse
-// @Failure      500  {object}  errorResponse
+// @Failure      404  {object}  types.ErrorResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /challenges/{id} [get]
 func GetChallengeDetail(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -89,7 +90,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 				"error":    err.Error(),
 				"user_hit": userCacheHit,
 			}).Error("Failed to fetch user from DB")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -105,7 +106,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 			"challenge": challengeIDStr,
 			"ip":        ctx.ClientIP(),
 		}).Warn("Invalid challenge ID in request")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid challenge ID"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid challenge ID"})
 		return
 	}
 	if user.TeamID == nil {
@@ -117,7 +118,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 			"ip":       ctx.ClientIP(),
 			"user_hit": userCacheHit,
 		}).Warn("User is not part of a team")
-		ctx.JSON(http.StatusForbidden, errorResponse{Error: "User should belong to a team"})
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "User should belong to a team"})
 		return
 	}
 	solved := false
@@ -163,7 +164,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 					"challenge": challengeID,
 					"ip":        ctx.ClientIP(),
 				}).Warn("Challenge not found")
-				ctx.JSON(http.StatusNotFound, errorResponse{Error: "Challenge not found"})
+				ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Challenge not found"})
 				return
 			}
 			auditLog.WithFields(logrus.Fields{
@@ -175,7 +176,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 				"ip":        ctx.ClientIP(),
 				"error":     err.Error(),
 			}).Error("Error fetching challenge from DB")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 			return
 		}
 		shared.ChallengeCache.Set(challengeID, challenge)
@@ -220,9 +221,9 @@ func GetChallengeDetail(ctx *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Challenge ID"
 // @Success      200  {object}  challengeConfigResponse
-// @Failure      403  {object}  errorResponse
-// @Failure      404  {object}  errorResponse
-// @Failure      500  {object}  errorResponse
+// @Failure      403  {object}  types.ErrorResponse
+// @Failure      404  {object}  types.ErrorResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /challenges/{id}/config [get]
 func GetChallengeConfig(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -243,7 +244,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 				"error":    err.Error(),
 				"user_hit": userCacheHit,
 			}).Error("Failed to fetch user from DB")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -259,7 +260,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 			"challenge": challengeIDStr,
 			"ip":        ctx.ClientIP(),
 		}).Warn("Invalid challenge ID in request")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid challenge ID"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid challenge ID"})
 		return
 	}
 	if user.TeamID == nil {
@@ -271,7 +272,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 			"ip":       ctx.ClientIP(),
 			"user_hit": userCacheHit,
 		}).Warn("User is not part of a team")
-		ctx.JSON(http.StatusForbidden, errorResponse{Error: "User should belong to a team"})
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "User should belong to a team"})
 		return
 	}
 	solved := false
@@ -317,7 +318,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 					"challenge": challengeID,
 					"ip":        ctx.ClientIP(),
 				}).Warn("Challenge not found")
-				ctx.JSON(http.StatusNotFound, errorResponse{Error: "Challenge not found"})
+				ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Challenge not found"})
 				return
 			}
 			auditLog.WithFields(logrus.Fields{
@@ -329,7 +330,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 				"ip":        ctx.ClientIP(),
 				"error":     err.Error(),
 			}).Error("Error fetching challenge from DB")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 			return
 		}
 		shared.ChallengeCache.Set(challengeID, challenge)
@@ -357,7 +358,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 					"ip":            ctx.ClientIP(),
 					"error":         err.Error(),
 				}).Error("Failed to retrieve static config from DB")
-				ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to retrieve data from DB"})
+				ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to retrieve data from DB"})
 				return
 			} else {
 				shared.StaticConfig.Set(challenge.ID, static_config)
@@ -404,7 +405,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 				"is_static":     false,
 				"ip":            ctx.ClientIP(),
 			}).Warn("The user doesn't have a sandbox created")
-			ctx.JSON(http.StatusNotFound, errorResponse{Error: "The user doesnt have a sandbox created"})
+			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "The user doesnt have a sandbox created"})
 			return
 		}
 		if !challenge_sandbox.Active {
@@ -421,7 +422,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 				"is_static":     false,
 				"ip":            ctx.ClientIP(),
 			}).Warn("The user doesn't have sandbox active")
-			ctx.JSON(http.StatusForbidden, errorResponse{Error: "The user doesnt have sandbox active"})
+			ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "The user doesnt have sandbox active"})
 			return
 		}
 		var sandbox_meta sandbox.SandBoxResponse
@@ -440,7 +441,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 				"ip":            ctx.ClientIP(),
 				"error":         err.Error(),
 			}).Error("Failed to get meta of sandbox")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to get meta of sandbox"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to get meta of sandbox"})
 			return
 		} else {
 			sandbox_meta = val
@@ -481,10 +482,10 @@ func GetChallengeConfig(ctx *gin.Context) {
 // @Param        id    path      string              true   "Challenge ID"
 // @Param        flag  body      submitFlagRequest   true   "Flag submission"
 // @Success      200   {object}  submitFlagResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      403   {object}  errorResponse
-// @Failure      404   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      403   {object}  types.ErrorResponse
+// @Failure      404   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /challenges/{id}/submit [post]
 func SubmitFlag(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -498,7 +499,7 @@ func SubmitFlag(ctx *gin.Context) {
 			"challenge": challengeIDStr,
 			"ip":        ctx.ClientIP(),
 		}).Warn("Invalid challenge ID format")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid challenge ID"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid challenge ID"})
 		return
 	}
 	var req submitFlagRequest
@@ -510,7 +511,7 @@ func SubmitFlag(ctx *gin.Context) {
 			"challenge": challengeID,
 			"ip":        ctx.ClientIP(),
 		}).Warn("Failed to parse request body")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Failed to parse the body"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Failed to parse the body"})
 		return
 	}
 	userID := ctx.GetInt("user_id")
@@ -530,7 +531,7 @@ func SubmitFlag(ctx *gin.Context) {
 					"ip":       ctx.ClientIP(),
 					"user_hit": userCacheHit,
 				}).Warn("User not found during flag submission")
-				ctx.JSON(http.StatusNotFound, errorResponse{Error: "User not found"})
+				ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "User not found"})
 				return
 			}
 			auditLog.WithFields(logrus.Fields{
@@ -542,7 +543,7 @@ func SubmitFlag(ctx *gin.Context) {
 				"error":    err.Error(),
 				"user_hit": userCacheHit,
 			}).Error("DB error fetching user during flag submission")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to get user data"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to get user data"})
 			return
 		}
 		shared.UserCache.Set(userID, user)
@@ -556,7 +557,7 @@ func SubmitFlag(ctx *gin.Context) {
 			"ip":       ctx.ClientIP(),
 			"user_hit": userCacheHit,
 		}).Warn("User is not part of a team")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "User must be in a team to submit flags"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "User must be in a team to submit flags"})
 		return
 	}
 	var challenge models.Challenge
@@ -576,7 +577,7 @@ func SubmitFlag(ctx *gin.Context) {
 					"ip":        ctx.ClientIP(),
 					"user_hit":  userCacheHit,
 				}).Warn("Challenge not found during flag submission")
-				ctx.JSON(http.StatusNotFound, errorResponse{Error: "Challenge not found"})
+				ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "Challenge not found"})
 				return
 			}
 			auditLog.WithFields(logrus.Fields{
@@ -589,7 +590,7 @@ func SubmitFlag(ctx *gin.Context) {
 				"error":     err.Error(),
 				"user_hit":  userCacheHit,
 			}).Error("DB error fetching challenge during flag submission")
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to get challenge data"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to get challenge data"})
 			return
 		}
 		shared.ChallengeCache.Set(challengeID, challenge)
@@ -607,14 +608,14 @@ func SubmitFlag(ctx *gin.Context) {
 			"challenge": challengeID,
 			"ip":        ctx.ClientIP(),
 		}).Warn("Team already solved the challenge")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Challenge already solved by your team"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Challenge already solved by your team"})
 		return
 	}
 	var correctFlag string
 	var challengeType int8
 	if challenge.IsStatic {
 		if err := models.DB.Model(&challenge).Association("StaticConfig").Find(&challenge.StaticConfig); err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to get static metadata from DB"})
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to get static metadata from DB"})
 			return
 		}
 		correctFlag = challenge.StaticConfig.Flag
@@ -660,7 +661,7 @@ func SubmitFlag(ctx *gin.Context) {
 					"ip":        ctx.ClientIP(),
 					"error":     err.Error(),
 				}).Error("Failed to record User ban")
-				ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to update user status"})
+				ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to update user status"})
 				return
 			} else {
 				auditLog.WithFields(logrus.Fields{
@@ -673,7 +674,7 @@ func SubmitFlag(ctx *gin.Context) {
 					"ip":        ctx.ClientIP(),
 				}).Error("User has submitted someone else's flag")
 				shared.UserCache.Delete(user.ID)
-				ctx.JSON(http.StatusForbidden, errorResponse{Error: "Account got banned"})
+				ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Account got banned"})
 				return
 			}
 		} else if values.GetConfig().App.Ban.TeamBan {
@@ -688,7 +689,7 @@ func SubmitFlag(ctx *gin.Context) {
 					"ip":        ctx.ClientIP(),
 					"error":     err.Error(),
 				}).Error("Failed to record Team ban")
-				ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to update team status"})
+				ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to update team status"})
 				return
 			} else {
 				auditLog.WithFields(logrus.Fields{
@@ -701,7 +702,7 @@ func SubmitFlag(ctx *gin.Context) {
 					"ip":        ctx.ClientIP(),
 				}).Error("Team has submitted someone else's flag")
 				shared.TeamCache.Delete(*user.TeamID)
-				ctx.JSON(http.StatusForbidden, errorResponse{Error: "Team account got banned"})
+				ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Team account got banned"})
 				return
 			}
 		}
@@ -723,7 +724,7 @@ func SubmitFlag(ctx *gin.Context) {
 			"ip":        ctx.ClientIP(),
 			"error":     err.Error(),
 		}).Error("Failed to record solve")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to record solve"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to record solve"})
 		return
 	}
 	auditLog.WithFields(logrus.Fields{

@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -17,7 +18,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  []models.Team
-// @Failure      500  {object}  errorResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/team/all [get]
 func GetAllTeams(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -30,7 +31,7 @@ func GetAllTeams(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in getAllTeams")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -52,8 +53,8 @@ func GetAllTeams(ctx *gin.Context) {
 // @Produce      json
 // @Param        team  body      models.Team  true  "Team object"
 // @Success      200   {object}  models.Team
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/team/edit [patch]
 func UpdateTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -66,7 +67,7 @@ func UpdateTeam(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in updateTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -77,7 +78,7 @@ func UpdateTeam(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in updateTeam")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -99,8 +100,8 @@ func UpdateTeam(ctx *gin.Context) {
 // @Produce      json
 // @Param        team  body      models.Team  true  "Team object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/team/delete [delete]
 func DeleteTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -113,7 +114,7 @@ func DeleteTeam(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in deleteTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -124,7 +125,7 @@ func DeleteTeam(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in deleteTeam")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -146,8 +147,8 @@ func DeleteTeam(ctx *gin.Context) {
 // @Produce      json
 // @Param        team  body      models.Team  true  "Team object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/team/ban [post]
 func BanTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -160,7 +161,7 @@ func BanTeam(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in banTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -171,7 +172,7 @@ func BanTeam(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in banTeam")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -193,8 +194,8 @@ func BanTeam(ctx *gin.Context) {
 // @Produce      json
 // @Param        team  body      models.Team  true  "Team object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/team/unban [post]
 func UnbanTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -207,7 +208,7 @@ func UnbanTeam(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in unbanTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -218,7 +219,7 @@ func UnbanTeam(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in unbanTeam")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -240,8 +241,8 @@ func UnbanTeam(ctx *gin.Context) {
 // @Produce      json
 // @Param        team  body      models.Team  true  "Team object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/team/blacklist [post]
 func BlacklistTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -254,7 +255,7 @@ func BlacklistTeam(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in blacklistTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -265,7 +266,7 @@ func BlacklistTeam(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in blacklistTeam")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -287,8 +288,8 @@ func BlacklistTeam(ctx *gin.Context) {
 // @Produce      json
 // @Param        team  body      models.Team  true  "Team object"
 // @Success      200   {object}  successResponse
-// @Failure      400   {object}  errorResponse
-// @Failure      500   {object}  errorResponse
+// @Failure      400   {object}  types.ErrorResponse
+// @Failure      500   {object}  types.ErrorResponse
 // @Router       /admin/team/unblacklist [post]
 func UnblacklistTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -301,7 +302,7 @@ func UnblacklistTeam(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in unblacklistTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -312,7 +313,7 @@ func UnblacklistTeam(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in unblacklistTeam")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
