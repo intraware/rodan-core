@@ -11,7 +11,7 @@ func LoadChallenges(r *gin.RouterGroup) {
 	challengeRouter.GET("/list", middleware.CacheMiddleware, handlers.GetChallengeList) // TODO: gotta support chained challenges
 
 	// Protected routes
-	protectedRouter := challengeRouter.Group("/", middleware.AuthRequired
+	protectedRouter := challengeRouter.Group("/", middleware.AuthRequired)
 	protectedRouter.GET("/:id", middleware.CacheMiddleware, handlers.GetChallengeDetail)
 	protectedRouter.GET("/:id/config", handlers.GetChallengeConfig)
 	protectedRouter.POST("/:id/submit", handlers.SubmitFlag)

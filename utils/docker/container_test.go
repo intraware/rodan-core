@@ -25,7 +25,7 @@ func testCreateContainer(t *testing.T) {
 	defer cancel()
 	imageName := "alpine"
 	containerName := "integration-test"
-	containerID, err := docker.CreateContainer(ctx, containerName, imageName)
+	containerID, err := docker.CreateContainer(ctx, containerName, imageName, nil)
 	if err != nil {
 		t.Fatalf("CreateContainer failed: %v", err)
 	}
