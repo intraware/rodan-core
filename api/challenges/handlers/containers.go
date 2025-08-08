@@ -15,6 +15,20 @@ import (
 	"gorm.io/gorm"
 )
 
+// StartDynamicChallenge godoc
+// @Summary      Start a dynamic challenge
+// @Description  Starts a dynamic challenge container for the user's team
+// @Security     BearerAuth
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  successResponse
+// @Failure      400  {object}  errorResponse
+// @Failure      404  {object}  errorResponse
+// @Failure      409  {object}  errorResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /challenges/{id}/start [post]
 func StartDynamicChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
@@ -248,6 +262,20 @@ func StartDynamicChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Container started successfully"})
 }
 
+// StopDynamicChallenge godoc
+// @Summary      Stop a dynamic challenge
+// @Description  Stops a dynamic challenge container for the user's team
+// @Security     BearerAuth
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  successResponse
+// @Failure      400  {object}  errorResponse
+// @Failure      404  {object}  errorResponse
+// @Failure      409  {object}  errorResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /challenges/{id}/stop [post]
 func StopDynamicChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
@@ -444,6 +472,20 @@ func StopDynamicChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Stopped container successfully"})
 }
 
+// ExtendDynamicChallenge godoc
+// @Summary      Extend dynamic challenge time
+// @Description  Extends the runtime of a dynamic challenge container
+// @Security     BearerAuth
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  successResponse
+// @Failure      400  {object}  errorResponse
+// @Failure      404  {object}  errorResponse
+// @Failure      409  {object}  errorResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /challenges/{id}/extend [post]
 func ExtendDynamicChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
@@ -578,6 +620,20 @@ func ExtendDynamicChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "TTL extended of the container"})
 }
 
+// RegenerateDynamicChallenge godoc
+// @Summary      Regenerate dynamic challenge
+// @Description  Regenerates a dynamic challenge container with new configuration
+// @Security     BearerAuth
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  successResponse
+// @Failure      400  {object}  errorResponse
+// @Failure      404  {object}  errorResponse
+// @Failure      409  {object}  errorResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /challenges/{id}/regenerate [post]
 func RegenerateDynamicChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")

@@ -9,6 +9,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// GetAllChallenges godoc
+// @Summary      Get all challenges
+// @Description  Retrieves a list of all challenges from the database
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  []models.Challenge
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/challenge/all [get]
 func GetAllChallenges(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var challenges []models.Challenge
@@ -33,6 +43,18 @@ func GetAllChallenges(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, challenges)
 }
 
+// AddChallenge godoc
+// @Summary      Add a new challenge
+// @Description  Creates a new challenge in the database
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        challenge  body      models.Challenge  true  "Challenge object"
+// @Success      200        {object}  models.Challenge
+// @Failure      400        {object}  errorResponse
+// @Failure      500        {object}  errorResponse
+// @Router       /admin/challenge/add [post]
 func AddChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var challenge models.Challenge
@@ -68,6 +90,18 @@ func AddChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, challenge)
 }
 
+// UpdateChallenge godoc
+// @Summary      Update a challenge
+// @Description  Updates an existing challenge in the database
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        challenge  body      models.Challenge  true  "Challenge object"
+// @Success      200        {object}  models.Challenge
+// @Failure      400        {object}  errorResponse
+// @Failure      500        {object}  errorResponse
+// @Router       /admin/challenge/edit [patch]
 func UpdateChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var challenge models.Challenge
@@ -103,6 +137,18 @@ func UpdateChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, challenge)
 }
 
+// DeleteChallenge godoc
+// @Summary      Delete a challenge
+// @Description  Deletes an existing challenge from the database
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        challenge  body      models.Challenge  true  "Challenge object"
+// @Success      200        {object}  successResponse
+// @Failure      400        {object}  errorResponse
+// @Failure      500        {object}  errorResponse
+// @Router       /admin/challenge/delete [delete]
 func DeleteChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var challenge models.Challenge

@@ -9,6 +9,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// GetAllUsers godoc
+// @Summary      Get all users
+// @Description  Retrieves a list of all users in the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  []models.User
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/user/all [get]
 func GetAllUsers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var users []models.User
@@ -27,6 +37,18 @@ func GetAllUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, users)
 }
 
+// UpdateUser godoc
+// @Summary      Update user information
+// @Description  Updates an existing user's information in the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User object"
+// @Success      200   {object}  models.User
+// @Failure      400   {object}  errorResponse
+// @Failure      500   {object}  errorResponse
+// @Router       /admin/user/edit [patch]
 func UpdateUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
@@ -62,6 +84,18 @@ func UpdateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
+// DeleteUser godoc
+// @Summary      Delete a user
+// @Description  Deletes an existing user from the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User object"
+// @Success      200   {object}  successResponse
+// @Failure      400   {object}  errorResponse
+// @Failure      500   {object}  errorResponse
+// @Router       /admin/user/delete [delete]
 func DeleteUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
@@ -97,6 +131,18 @@ func DeleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
+// BanUser godoc
+// @Summary      Ban a user
+// @Description  Bans a user from accessing the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User object"
+// @Success      200   {object}  successResponse
+// @Failure      400   {object}  errorResponse
+// @Failure      500   {object}  errorResponse
+// @Router       /admin/user/ban [post]
 func BanUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
@@ -133,6 +179,18 @@ func BanUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User banned successfully"})
 }
 
+// UnbanUser godoc
+// @Summary      Unban a user
+// @Description  Removes the ban from a user account
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User object"
+// @Success      200   {object}  successResponse
+// @Failure      400   {object}  errorResponse
+// @Failure      500   {object}  errorResponse
+// @Router       /admin/user/unban [post]
 func UnbanUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
@@ -169,6 +227,18 @@ func UnbanUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User unbanned successfully"})
 }
 
+// BlacklistUser godoc
+// @Summary      Blacklist a user
+// @Description  Adds a user to the blacklist
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User object"
+// @Success      200   {object}  successResponse
+// @Failure      400   {object}  errorResponse
+// @Failure      500   {object}  errorResponse
+// @Router       /admin/user/blacklist [post]
 func BlacklistUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User
@@ -205,6 +275,18 @@ func BlacklistUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User blacklisted successfully"})
 }
 
+// UnblacklistUser godoc
+// @Summary      Remove user from blacklist
+// @Description  Removes a user from the blacklist
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User object"
+// @Success      200   {object}  successResponse
+// @Failure      400   {object}  errorResponse
+// @Failure      500   {object}  errorResponse
+// @Router       /admin/user/unblacklist [post]
 func UnblacklistUser(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var user models.User

@@ -10,6 +10,16 @@ import (
 	"github.com/intraware/rodan/sandbox"
 )
 
+// GetAllContainers godoc
+// @Summary      Get all containers
+// @Description  Retrieves a list of all containers in the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  []sandbox.Container
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/container/all [get]
 func GetAllContainers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	container := sandbox.Container{}
@@ -27,6 +37,16 @@ func GetAllContainers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, containers)
 }
 
+// StopAllContainers godoc
+// @Summary      Stop all containers
+// @Description  Stops all running containers in the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  successResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/container/stop_all [delete]
 func StopAllContainers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	container := sandbox.Container{}
@@ -48,6 +68,16 @@ func StopAllContainers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, successResponse{Message: "All containers stopped successfully"})
 }
 
+// KillAllContainers godoc
+// @Summary      Kill all containers
+// @Description  Forcefully kills all running containers in the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  successResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/container/kill_all [post]
 func KillAllContainers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	container := sandbox.Container{}
@@ -69,6 +99,17 @@ func KillAllContainers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, successResponse{Message: "All containers killed successfully"})
 }
 
+// StopContainer godoc
+// @Summary      Stop a specific container
+// @Description  Stops a specific container by its ID
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Container ID"
+// @Success      200  {object}  successResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/container/stop [delete]
 func StopContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	containerID := ctx.Param("id")
@@ -93,6 +134,17 @@ func StopContainer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, successResponse{Message: "Container stopped successfully"})
 }
 
+// StopTeamContainer godoc
+// @Summary      Stop team containers
+// @Description  Stops all containers associated with a specific team
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Team ID"
+// @Success      200  {object}  successResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/container/stop_team [delete]
 func StopTeamContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	teamID := ctx.Param("id")
@@ -117,6 +169,17 @@ func StopTeamContainer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, successResponse{Message: "Team container stopped successfully"})
 }
 
+// StopChallengeContainer godoc
+// @Summary      Stop challenge containers
+// @Description  Stops all containers associated with a specific challenge
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  successResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/container/stop_challenge [delete]
 func StopChallengeContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	challengeID := ctx.Param("id")

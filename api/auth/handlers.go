@@ -16,6 +16,18 @@ import (
 	"gorm.io/gorm"
 )
 
+// signUp godoc
+// @Summary      Sign up new user
+// @Description  Registers a new user account in the system
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        user  body      signUpRequest   true  "User registration data"
+// @Success      201   {object}  authResponse
+// @Failure      400   {object}  errorResponse
+// @Failure      409   {object}  errorResponse
+// @Failure      500   {object}  errorResponse
+// @Router       /auth/signup [post]
 func signUp(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var req signUpRequest
@@ -102,6 +114,19 @@ func signUp(ctx *gin.Context) {
 	})
 }
 
+// login godoc
+// @Summary      User login
+// @Description  Authenticates a user and returns an access token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        credentials  body      loginRequest  true  "Login credentials"
+// @Success      200          {object}  authResponse
+// @Failure      400          {object}  errorResponse
+// @Failure      401          {object}  errorResponse
+// @Failure      403          {object}  errorResponse
+// @Failure      500          {object}  errorResponse
+// @Router       /auth/login [post]
 func login(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var req loginRequest
@@ -230,6 +255,19 @@ func login(ctx *gin.Context) {
 	})
 }
 
+// forgotPassword godoc
+// @Summary      Forgot password
+// @Description  Initiates password reset process using OTP or backup code
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body      forgotPasswordRequest  true  "Forgot password request"
+// @Success      200      {object}  resetTokenResponse
+// @Failure      400      {object}  errorResponse
+// @Failure      401      {object}  errorResponse
+// @Failure      404      {object}  errorResponse
+// @Failure      500      {object}  errorResponse
+// @Router       /auth/forgot-password [post]
 func forgotPassword(ctx *gin.Context) {
 	var input forgotPasswordRequest
 	var user models.User
@@ -353,6 +391,19 @@ func forgotPassword(ctx *gin.Context) {
 	})
 }
 
+// resetPassword godoc
+// @Summary      Reset password
+// @Description  Resets user password using a valid reset token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        token    path      string               true  "Reset token"
+// @Param        request  body      resetPasswordRequest true  "New password data"
+// @Success      200      {object}  successResponse
+// @Failure      400      {object}  errorResponse
+// @Failure      401      {object}  errorResponse
+// @Failure      500      {object}  errorResponse
+// @Router       /auth/reset-password/{token} [post]
 func resetPassword(ctx *gin.Context) {
 	token := ctx.Param("token")
 	auditLog := utils.Logger.WithField("type", "audit")

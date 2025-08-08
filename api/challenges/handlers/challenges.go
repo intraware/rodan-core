@@ -18,6 +18,16 @@ import (
 	"gorm.io/gorm"
 )
 
+// GetChallengeList godoc
+// @Summary      Get challenge list
+// @Description  Retrieves a list of visible challenges with basic information
+// @Security     BearerAuth
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  []models.Challenge
+// @Failure      500  {object}  errorResponse
+// @Router       /challenges [get]
 func GetChallengeList(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var challenges []models.Challenge
@@ -48,6 +58,18 @@ func GetChallengeList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, challengeList)
 }
 
+// GetChallengeDetail godoc
+// @Summary      Get challenge details
+// @Description  Retrieves detailed information about a specific challenge
+// @Security     BearerAuth
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  models.Challenge
+// @Failure      404  {object}  errorResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /challenges/{id} [get]
 func GetChallengeDetail(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
@@ -189,6 +211,19 @@ func GetChallengeDetail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// GetChallengeConfig godoc
+// @Summary      Get challenge configuration
+// @Description  Retrieves configuration details for a challenge including ports, links, and runtime information
+// @Security     BearerAuth
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  challengeConfigResponse
+// @Failure      403  {object}  errorResponse
+// @Failure      404  {object}  errorResponse
+// @Failure      500  {object}  errorResponse
+// @Router       /challenges/{id}/config [get]
 func GetChallengeConfig(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
@@ -436,6 +471,21 @@ func GetChallengeConfig(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// SubmitFlag godoc
+// @Summary      Submit a flag for a challenge
+// @Description  Submits a flag for validation against a specific challenge
+// @Security     BearerAuth
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string              true   "Challenge ID"
+// @Param        flag  body      submitFlagRequest   true   "Flag submission"
+// @Success      200   {object}  submitFlagResponse
+// @Failure      400   {object}  errorResponse
+// @Failure      403   {object}  errorResponse
+// @Failure      404   {object}  errorResponse
+// @Failure      500   {object}  errorResponse
+// @Router       /challenges/{id}/submit [post]
 func SubmitFlag(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	challengeIDStr := ctx.Param("id")

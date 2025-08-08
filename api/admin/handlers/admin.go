@@ -11,6 +11,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// GetAdmin godoc
+// @Summary      Get admin profile
+// @Description  Retrieves the profile information of the currently authenticated admin
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.Admin
+// @Failure      404  {object}  errorResponse
+// @Router       /admin/me [get]
 func GetAdmin(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	adminID := ctx.GetInt("admin_id")
@@ -29,6 +39,18 @@ func GetAdmin(ctx *gin.Context) {
 	}
 }
 
+// AddAdmin godoc
+// @Summary      Add a new admin
+// @Description  Creates a new admin account in the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        admin  body      models.Admin  true  "Admin object"
+// @Success      201    {object}  models.Admin
+// @Failure      400    {object}  errorResponse
+// @Failure      500    {object}  errorResponse
+// @Router       /admin/add [post]
 func AddAdmin(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var admin models.Admin
@@ -64,6 +86,18 @@ func AddAdmin(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, admin)
 }
 
+// UpdateAdmin godoc
+// @Summary      Update admin information
+// @Description  Updates the profile information of the currently authenticated admin
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        admin  body      models.Admin  true  "Admin object"
+// @Success      200    {object}  models.Admin
+// @Failure      400    {object}  errorResponse
+// @Failure      500    {object}  errorResponse
+// @Router       /admin/edit [patch]
 func UpdateAdmin(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	adminID := ctx.GetInt("admin_id")
@@ -100,6 +134,16 @@ func UpdateAdmin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, admin)
 }
 
+// DeleteAdmin godoc
+// @Summary      Delete admin account
+// @Description  Deletes the currently authenticated admin account
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      204
+// @Failure      500  {object}  errorResponse
+// @Router       /admin/delete [delete]
 func DeleteAdmin(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	adminID := ctx.GetInt("admin_id")
@@ -124,6 +168,17 @@ func DeleteAdmin(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, nil)
 }
 
+// FlushCache godoc
+// @Summary      Flush system caches
+// @Description  Flushes specific cache types or all caches in the system
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        cache_type  query     string  false  "Cache type to flush (user/team/challenge/login/static_config/team_solved/reset_password/all)"
+// @Success      200         {object}  successResponse
+// @Failure      400         {object}  errorResponse
+// @Router       /admin/flush_cache [post]
 func flush_cache(ctx *gin.Context) {
 	// take a parameter to flush specific cache objesct or all cache
 	auditLog := utils.Logger.WithField("type", "audit")
