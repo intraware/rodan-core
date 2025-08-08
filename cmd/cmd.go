@@ -9,6 +9,7 @@ import (
 	"github.com/intraware/rodan/api"
 	"github.com/intraware/rodan/internal/models"
 	"github.com/intraware/rodan/internal/utils"
+	"github.com/intraware/rodan/internal/utils/docker"
 	"github.com/intraware/rodan/internal/utils/middleware"
 	"github.com/intraware/rodan/internal/utils/values"
 )
@@ -21,6 +22,9 @@ func Run() {
 	cfg := values.GetConfig()
 	models.InitDB(cfg)
 	utils.NewLogger(cfg.Server.Production)
+	if err := docker.SetupDockerClient(); err != nil {
+		log.Fatalf("Failed to setup Docker client: %v", err)
+	}
 	if cfg.Server.Production {
 		gin.SetMode(gin.ReleaseMode)
 	} else {

@@ -15,29 +15,13 @@ import (
 )
 
 func StartContainer(ctx context.Context, containerID string) (err error) {
-	err = nil
-	cli, err := GetDockerClient()
-	if _, ping_err := cli.Ping(ctx); ping_err != nil {
-		ResetDockerClient()
-	}
-	if err != nil {
-		return
-	}
-	err = cli.ContainerStart(ctx, containerID, container.StartOptions{})
+	err = dockerClient.ContainerStart(ctx, containerID, container.StartOptions{})
 	return
 }
 
 func StopContainer(ctx context.Context, containerID string) (err error) {
-	err = nil
-	cli, err := GetDockerClient()
-	if _, ping_err := cli.Ping(ctx); ping_err != nil {
-		ResetDockerClient()
-	}
-	if err != nil {
-		return
-	}
 	timeout := int(values.GetConfig().Docker.ContainerTimeout.Seconds())
-	err = cli.ContainerStop(ctx, containerID, container.StopOptions{
+	err = dockerClient.ContainerStop(ctx, containerID, container.StopOptions{
 		Timeout: &timeout,
 	})
 	return
@@ -62,14 +46,6 @@ func randomPortInRange(minPort, maxPort int) (int, error) {
 }
 
 func CreateContainer(ctx context.Context, containerName, imageName string, internalPorts []string) (containerID string, err error) {
-	containerID = ""
-	cli, err := GetDockerClient()
-	if err != nil {
-		return
-	}
-	if _, pingErr := cli.Ping(ctx); pingErr != nil {
-		ResetDockerClient()
-	}
 	exposedPorts := nat.PortSet{}
 	portBindings := nat.PortMap{}
 	minPort := values.GetConfig().Docker.PortRange.Start
@@ -94,7 +70,7 @@ func CreateContainer(ctx context.Context, containerName, imageName string, inter
 		}}
 		exposedPorts[containerPort] = struct{}{}
 	}
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
+	resp, err := dockerClient.ContainerCreate(ctx, &container.Config{
 		Image:        imageName,
 		ExposedPorts: exposedPorts,
 		Labels: map[string]string{
@@ -111,31 +87,16 @@ func CreateContainer(ctx context.Context, containerName, imageName string, inter
 }
 
 func RemoveContainer(ctx context.Context, containerID string) (err error) {
-	err = nil
-	cli, err := GetDockerClient()
-	if _, ping_err := cli.Ping(ctx); ping_err != nil {
-		ResetDockerClient()
-	}
-	if err != nil {
-		return
-	}
-	err = cli.ContainerRemove(ctx, containerID, container.RemoveOptions{
+	err = dockerClient.ContainerRemove(ctx, containerID, container.RemoveOptions{
 		Force: true,
 	})
 	return
 }
 
 func ListContainers(ctx context.Context) ([]container.Summary, error) {
-	cli, err := GetDockerClient()
-	if _, ping_err := cli.Ping(ctx); ping_err != nil {
-		ResetDockerClient()
-	}
-	if err != nil {
-		return nil, err
-	}
 	filterArgs := filters.NewArgs()
 	filterArgs.Add("label", "created_by=rodan")
-	containers, err := cli.ContainerList(ctx, container.ListOptions{
+	containers, err := dockerClient.ContainerList(ctx, container.ListOptions{
 		All:     true,
 		Filters: filterArgs,
 	})
@@ -146,19 +107,11 @@ func ListContainers(ctx context.Context) ([]container.Summary, error) {
 }
 
 func RunCommand(ctx context.Context, containerID, command string) (err error) {
-	err = nil
-	cli, err := GetDockerClient()
-	if _, ping_err := cli.Ping(ctx); ping_err != nil {
-		ResetDockerClient()
-	}
-	if err != nil {
-		return
-	}
 	cmd := strings.Fields(command)
 	if len(cmd) == 0 {
 		return fmt.Errorf("empty command")
 	}
-	exe, err := cli.ContainerExecCreate(ctx, containerID, container.ExecOptions{
+	exe, err := dockerClient.ContainerExecCreate(ctx, containerID, container.ExecOptions{
 		User:       "rodan",
 		Privileged: false,
 		Tty:        false,
@@ -168,22 +121,15 @@ func RunCommand(ctx context.Context, containerID, command string) (err error) {
 	if err != nil {
 		return
 	}
-	err = cli.ContainerExecStart(ctx, exe.ID, container.ExecStartOptions{
+	err = dockerClient.ContainerExecStart(ctx, exe.ID, container.ExecStartOptions{
 		Detach: false,
 		Tty:    false,
 	})
-	if err != nil {
-		return
-	}
 	return
 }
 
 func GetBoundPorts(ctx context.Context, containerID string) (map[string]string, error) {
-	cli, err := GetDockerClient()
-	if err != nil {
-		return nil, err
-	}
-	info, err := cli.ContainerInspect(ctx, containerID)
+	info, err := dockerClient.ContainerInspect(ctx, containerID)
 	if err != nil {
 		return nil, err
 	}

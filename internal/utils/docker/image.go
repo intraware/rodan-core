@@ -10,14 +10,7 @@ import (
 )
 
 func ImageExists(ctx context.Context, imageName string) bool {
-	cli, err := GetDockerClient()
-	if _, ping_err := cli.Ping(ctx); ping_err != nil {
-		ResetDockerClient()
-	}
-	if err != nil {
-		return false
-	}
-	_, err = cli.ImageInspect(ctx, imageName)
+	_, err := dockerClient.ImageInspect(ctx, imageName)
 	if err != nil {
 		if errdefs.IsNotFound(err) {
 			return false
@@ -28,14 +21,7 @@ func ImageExists(ctx context.Context, imageName string) bool {
 }
 
 func PullImage(ctx context.Context, imageName string) error {
-	cli, err := GetDockerClient()
-	if _, ping_err := cli.Ping(ctx); ping_err != nil {
-		ResetDockerClient()
-	}
-	if err != nil {
-		return fmt.Errorf("failed to get Docker client: %w", err)
-	}
-	reader, err := cli.ImagePull(ctx, imageName, image.PullOptions{})
+	reader, err := dockerClient.ImagePull(ctx, imageName, image.PullOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to pull image %s: %w", imageName, err)
 	}
