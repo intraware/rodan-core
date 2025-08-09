@@ -33,12 +33,9 @@ import (
 func StartDynamicChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
-	var user models.User
-	userCacheHit := false
-	if val, ok := shared.UserCache.Get(userID); ok {
-		user = val
-		userCacheHit = true
-	} else {
+
+	user, userCacheHit := shared.UserCache.Get(userID)
+	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":    "start_dynamic_challenge",
@@ -80,31 +77,24 @@ func StartDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "User should belong to a team"})
 		return
 	}
-	solved := false
-	solveCacheHit := false
-	{
-		key := fmt.Sprintf("%d:%d", *user.TeamID, challengeID)
-		var solve models.Solve
-		if val, ok := shared.TeamSolvedCache.Get(key); ok && val {
+	key := fmt.Sprintf("%d:%d", *user.TeamID, challengeID)
+	solved, solveCacheHit := shared.TeamSolvedCache.Get(key)
+	if !solveCacheHit {
+		err := models.DB.Where("team_id = ? AND challenge_id = ?", *user.TeamID, challengeID).First(&models.Solve{}).Error
+		if err == nil {
 			solved = true
-			solveCacheHit = true
-		} else {
-			err := models.DB.Where("team_id = ? AND challenge_id = ?", *user.TeamID, challengeID).First(&solve).Error
-			if err == nil {
-				solved = true
-				shared.TeamSolvedCache.Set(key, true)
-			} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-				auditLog.WithFields(logrus.Fields{
-					"event":     "start_dynamic_challenge",
-					"status":    "partial_failure",
-					"reason":    "db_error_solve_lookup",
-					"user_id":   user.ID,
-					"team_id":   *user.TeamID,
-					"challenge": challengeID,
-					"ip":        ctx.ClientIP(),
-					"error":     err.Error(),
-				}).Warn("Error checking solve status")
-			}
+			shared.TeamSolvedCache.Set(key, true)
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			auditLog.WithFields(logrus.Fields{
+				"event":     "start_dynamic_challenge",
+				"status":    "partial_failure",
+				"reason":    "db_error_solve_lookup",
+				"user_id":   user.ID,
+				"team_id":   *user.TeamID,
+				"challenge": challengeID,
+				"ip":        ctx.ClientIP(),
+				"error":     err.Error(),
+			}).Warn("Error checking solve status")
 		}
 	}
 	if solved {
@@ -122,12 +112,8 @@ func StartDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "The team has already solved the challenge"})
 		return
 	}
-	var challenge models.Challenge
-	challengeCacheHit := false
-	if val, ok := shared.ChallengeCache.Get(challengeID); ok {
-		challenge = val
-		challengeCacheHit = true
-	} else {
+	challenge, challengeCacheHit := shared.ChallengeCache.Get(challengeID)
+	if !challengeCacheHit {
 		if err := models.DB.Where("is_visible = ?", true).First(&challenge, challengeID).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				auditLog.WithFields(logrus.Fields{
@@ -199,11 +185,9 @@ func StartDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Invalid Docker Image is added to the list"})
 		return
 	}
-	var challenge_sandbox *sandbox.SandBox
-	flag := generateHashedFlag(challengeID, *user.TeamID)
-	if val, ok := shared.SandBoxMap[*user.TeamID]; ok {
-		challenge_sandbox = val
-	} else {
+	challenge_sandbox, ok := shared.SandBoxMap[*user.TeamID]
+	if !ok {
+		flag := generateHashedFlag(challengeID, *user.TeamID)
 		challenge_sandbox = sandbox.NewSandBox(userID, *user.TeamID, &challenge, flag)
 		shared.SandBoxMap[*user.TeamID] = challenge_sandbox
 	}
@@ -280,12 +264,9 @@ func StartDynamicChallenge(ctx *gin.Context) {
 func StopDynamicChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
-	var user models.User
-	userCacheHit := false
-	if val, ok := shared.UserCache.Get(userID); ok {
-		user = val
-		userCacheHit = true
-	} else {
+
+	user, userCacheHit := shared.UserCache.Get(userID)
+	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":    "stop_dynamic_challenge",
@@ -327,12 +308,9 @@ func StopDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "User should belong to a team"})
 		return
 	}
-	var challenge models.Challenge
-	challengeCacheHit := false
-	if val, ok := shared.ChallengeCache.Get(challengeID); ok {
-		challenge = val
-		challengeCacheHit = true
-	} else {
+
+	challenge, challengeCacheHit := shared.ChallengeCache.Get(challengeID)
+	if !challengeCacheHit {
 		if err := models.DB.First(&challenge, challengeID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":     "stop_dynamic_challenge",
@@ -364,10 +342,8 @@ func StopDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Static challenges cannot spawn dynamic containers."})
 		return
 	}
-	var challenge_sandbox *sandbox.SandBox
-	if val, ok := shared.SandBoxMap[*user.TeamID]; ok {
-		challenge_sandbox = val
-	} else {
+	challenge_sandbox, ok := shared.SandBoxMap[*user.TeamID]
+	if !ok {
 		auditLog.WithFields(logrus.Fields{
 			"event":         "stop_dynamic_challenge",
 			"status":        "failure",
@@ -490,12 +466,8 @@ func StopDynamicChallenge(ctx *gin.Context) {
 func ExtendDynamicChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
-	var user models.User
-	userCacheHit := false
-	if val, ok := shared.UserCache.Get(userID); ok {
-		user = val
-		userCacheHit = true
-	} else {
+	user, userCacheHit := shared.UserCache.Get(userID)
+	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":    "extend_dynamic_challenge",
@@ -537,12 +509,8 @@ func ExtendDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "User should belong to a team"})
 		return
 	}
-	var challenge models.Challenge
-	challengeCacheHit := false
-	if val, ok := shared.ChallengeCache.Get(challengeID); ok {
-		challenge = val
-		challengeCacheHit = true
-	} else {
+	challenge, challengeCacheHit := shared.ChallengeCache.Get(challengeID)
+	if !challengeCacheHit {
 		if err := models.DB.First(&challenge, challengeID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":     "extend_dynamic_challenge",
@@ -574,10 +542,8 @@ func ExtendDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Static challenges cannot spawn dynamic containers."})
 		return
 	}
-	var challenge_sandbox *sandbox.SandBox
-	if val, ok := shared.SandBoxMap[*user.TeamID]; ok {
-		challenge_sandbox = val
-	} else {
+	challenge_sandbox, ok := shared.SandBoxMap[*user.TeamID]
+	if !ok {
 		auditLog.WithFields(logrus.Fields{
 			"event":         "extend_dynamic_challenge",
 			"status":        "failure",
@@ -638,12 +604,8 @@ func ExtendDynamicChallenge(ctx *gin.Context) {
 func RegenerateDynamicChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
-	var user models.User
-	userCacheHit := false
-	if val, ok := shared.UserCache.Get(userID); ok {
-		user = val
-		userCacheHit = true
-	} else {
+	user, userCacheHit := shared.UserCache.Get(userID)
+	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":    "regenerate_dynamic_challenge",
@@ -685,12 +647,8 @@ func RegenerateDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "User should belong to a team"})
 		return
 	}
-	var challenge models.Challenge
-	challengeCacheHit := false
-	if val, ok := shared.ChallengeCache.Get(challengeID); ok {
-		challenge = val
-		challengeCacheHit = true
-	} else {
+	challenge, challengeCacheHit := shared.ChallengeCache.Get(challengeID)
+	if !challengeCacheHit {
 		if err := models.DB.First(&challenge, challengeID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":     "regenerate_dynamic_challenge",
@@ -722,10 +680,8 @@ func RegenerateDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Static challenges cannot spawn dynamic containers."})
 		return
 	}
-	var challenge_sandbox *sandbox.SandBox
-	if val, ok := shared.SandBoxMap[*user.TeamID]; ok {
-		challenge_sandbox = val
-	} else {
+	challenge_sandbox, ok := shared.SandBoxMap[*user.TeamID]
+	if !ok {
 		auditLog.WithFields(logrus.Fields{
 			"event":         "regenerate_dynamic_challenge",
 			"status":        "failure",

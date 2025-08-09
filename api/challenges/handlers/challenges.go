@@ -43,12 +43,12 @@ func GetChallengeList(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to fetch challenges"})
 		return
 	}
-	var challengeList []challengeItem
-	for _, challenge := range challenges {
-		challengeList = append(challengeList, challengeItem{
+	var challengeList = make([]challengeItem, len(challenges))
+	for idx, challenge := range challenges {
+		challengeList[idx] = challengeItem{
 			ID:    challenge.ID,
 			Title: challenge.Name,
-		})
+		}
 	}
 	auditLog.WithFields(logrus.Fields{
 		"event":  "get_challenge_list",
@@ -75,11 +75,8 @@ func GetChallengeDetail(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
 	var user models.User
-	userCacheHit := false
-	if val, ok := shared.UserCache.Get(userID); ok {
-		user = val
-		userCacheHit = true
-	} else {
+	user, userCacheHit := shared.UserCache.Get(userID)
+	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":    "get_challenge_detail",
@@ -105,6 +102,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 			"user_id":   user.ID,
 			"challenge": challengeIDStr,
 			"ip":        ctx.ClientIP(),
+			"user_hit":  userCacheHit,
 		}).Warn("Invalid challenge ID in request")
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid challenge ID"})
 		return
@@ -121,39 +119,28 @@ func GetChallengeDetail(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "User should belong to a team"})
 		return
 	}
-	solved := false
-	solveCacheHit := false
-	{
-		key := fmt.Sprintf("%d:%d", *user.TeamID, challengeID)
-		var solve models.Solve
-		if val, ok := shared.TeamSolvedCache.Get(key); ok && val {
+	key := fmt.Sprintf("%d:%d", *user.TeamID, challengeID)
+	solved, solveCacheHit := shared.TeamSolvedCache.Get(key)
+	if !solveCacheHit {
+		err := models.DB.Where("team_id = ? AND challenge_id = ?", *user.TeamID, challengeID).First(&models.Solve{}).Error
+		if err == nil {
 			solved = true
-			solveCacheHit = true
-		} else {
-			err := models.DB.Where("team_id = ? AND challenge_id = ?", *user.TeamID, challengeID).First(&solve).Error
-			if err == nil {
-				solved = true
-				shared.TeamSolvedCache.Set(key, true)
-			} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-				auditLog.WithFields(logrus.Fields{
-					"event":     "get_challenge_detail",
-					"status":    "partial_failure",
-					"reason":    "db_error_solve_lookup",
-					"user_id":   user.ID,
-					"team_id":   *user.TeamID,
-					"challenge": challengeID,
-					"ip":        ctx.ClientIP(),
-					"error":     err.Error(),
-				}).Warn("Error checking solve status")
-			}
+			shared.TeamSolvedCache.Set(key, true)
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			auditLog.WithFields(logrus.Fields{
+				"event":     "get_challenge_detail",
+				"status":    "partial_failure",
+				"reason":    "db_error_solve_lookup",
+				"user_id":   user.ID,
+				"team_id":   *user.TeamID,
+				"challenge": challengeID,
+				"ip":        ctx.ClientIP(),
+				"error":     err.Error(),
+			}).Warn("Error checking solve status")
 		}
 	}
-	var challenge models.Challenge
-	challengeCacheHit := false
-	if val, ok := shared.ChallengeCache.Get(challengeID); ok {
-		challenge = val
-		challengeCacheHit = true
-	} else {
+	challenge, challengeCacheHit := shared.ChallengeCache.Get(challengeID)
+	if !challengeCacheHit {
 		if err := models.DB.Where("is_visible = ?", true).First(&challenge, challengeID).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				auditLog.WithFields(logrus.Fields{
@@ -228,12 +215,8 @@ func GetChallengeDetail(ctx *gin.Context) {
 func GetChallengeConfig(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	userID := ctx.GetInt("user_id")
-	var user models.User
-	userCacheHit := false
-	if val, ok := shared.UserCache.Get(userID); ok {
-		user = val
-		userCacheHit = true
-	} else {
+	user, userCacheHit := shared.UserCache.Get(userID)
+	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":    "get_challenge_config",
@@ -275,39 +258,29 @@ func GetChallengeConfig(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "User should belong to a team"})
 		return
 	}
-	solved := false
-	solveCacheHit := false
-	{
-		key := fmt.Sprintf("%d:%d", *user.TeamID, challengeID)
-		var solve models.Solve
-		if val, ok := shared.TeamSolvedCache.Get(key); ok && val {
+	key := fmt.Sprintf("%d:%d", *user.TeamID, challengeID)
+	solved, solveCacheHit := shared.TeamSolvedCache.Get(key)
+	if !solveCacheHit {
+		err := models.DB.Where("team_id = ? AND challenge_id = ?", *user.TeamID, challengeID).First(&models.Solve{}).Error
+		if err == nil {
 			solved = true
-			solveCacheHit = true
-		} else {
-			err := models.DB.Where("team_id = ? AND challenge_id = ?", *user.TeamID, challengeID).First(&solve).Error
-			if err == nil {
-				solved = true
-				shared.TeamSolvedCache.Set(key, true)
-			} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-				auditLog.WithFields(logrus.Fields{
-					"event":     "get_challenge_config",
-					"status":    "partial_failure",
-					"reason":    "db_error_solve_lookup",
-					"user_id":   user.ID,
-					"team_id":   *user.TeamID,
-					"challenge": challengeID,
-					"ip":        ctx.ClientIP(),
-					"error":     err.Error(),
-				}).Warn("Error checking solve status")
-			}
+			shared.TeamSolvedCache.Set(key, true)
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			auditLog.WithFields(logrus.Fields{
+				"event":     "get_challenge_config",
+				"status":    "partial_failure",
+				"reason":    "db_error_solve_lookup",
+				"user_id":   user.ID,
+				"team_id":   *user.TeamID,
+				"challenge": challengeID,
+				"ip":        ctx.ClientIP(),
+				"error":     err.Error(),
+			}).Warn("Error checking solve status")
 		}
 	}
-	var challenge models.Challenge
-	challengeCacheHit := false
-	if val, ok := shared.ChallengeCache.Get(challengeID); ok {
-		challenge = val
-		challengeCacheHit = true
-	} else {
+
+	challenge, challengeCacheHit := shared.ChallengeCache.Get(challengeID)
+	if !challengeCacheHit {
 		if err := models.DB.Where("is_visible = ?", true).First(&challenge, challengeID).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				auditLog.WithFields(logrus.Fields{
@@ -338,12 +311,8 @@ func GetChallengeConfig(ctx *gin.Context) {
 	// for files .. store in links
 	var response challengeConfigResponse
 	if challenge.IsStatic {
-		var static_config models.StaticConfig
-		staticConfigCacheHit := false
-		if val, ok := shared.StaticConfig.Get(challenge.ID); ok {
-			static_config = val
-			staticConfigCacheHit = true
-		} else {
+		static_config, staticConfigCacheHit := shared.StaticConfig.Get(challenge.ID)
+		if !staticConfigCacheHit {
 			if err := models.DB.Where("challenge_id = ?", challenge.ID).First(&static_config).Error; err != nil {
 				auditLog.WithFields(logrus.Fields{
 					"event":         "get_challenge_config",
@@ -388,10 +357,8 @@ func GetChallengeConfig(ctx *gin.Context) {
 			"ip":                ctx.ClientIP(),
 		}).Info("Fetched static challenge config successfully")
 	} else {
-		var challenge_sandbox *sandbox.SandBox
-		if val, ok := shared.SandBoxMap[*user.TeamID]; ok {
-			challenge_sandbox = val
-		} else {
+		challenge_sandbox, ok := shared.SandBoxMap[*user.TeamID]
+		if !ok {
 			auditLog.WithFields(logrus.Fields{
 				"event":         "get_challenge_config",
 				"status":        "failure",
@@ -515,12 +482,9 @@ func SubmitFlag(ctx *gin.Context) {
 		return
 	}
 	userID := ctx.GetInt("user_id")
-	var user models.User
-	userCacheHit := false
-	if val, ok := shared.UserCache.Get(userID); ok {
-		user = val
-		userCacheHit = true
-	} else {
+
+	user, userCacheHit := shared.UserCache.Get(userID)
+	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				auditLog.WithFields(logrus.Fields{
@@ -560,12 +524,8 @@ func SubmitFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "User must be in a team to submit flags"})
 		return
 	}
-	var challenge models.Challenge
-	challengeCacheHit := false
-	if val, ok := shared.ChallengeCache.Get(challengeID); ok {
-		challenge = val
-		challengeCacheHit = true
-	} else {
+	challenge, challengeCacheHit := shared.ChallengeCache.Get(challengeID)
+	if !challengeCacheHit {
 		if err := models.DB.Where("is_visible = ?", true).First(&challenge, challengeID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				auditLog.WithFields(logrus.Fields{
