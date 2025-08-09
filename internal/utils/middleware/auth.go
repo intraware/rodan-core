@@ -9,7 +9,7 @@ import (
 	"github.com/intraware/rodan/internal/utils/values"
 )
 
-var AuthRequired gin.HandlerFunc = func(ctx *gin.Context) {
+func AuthRequired(ctx *gin.Context) {
 	authHeader := ctx.GetHeader("Authorization")
 	if authHeader == "" {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})

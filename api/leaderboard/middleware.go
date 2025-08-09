@@ -10,7 +10,7 @@ import (
 
 var LastModified atomic.Value
 
-var LastModifiedMiddleware gin.HandlerFunc = func(ctx *gin.Context) {
+func LastModifiedMiddleware(ctx *gin.Context) {
 	clientMod := ctx.GetHeader("If-Modified-Since")
 	lastMod, ok := LastModified.Load().(time.Time)
 

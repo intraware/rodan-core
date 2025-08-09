@@ -9,7 +9,7 @@ import (
 	"github.com/intraware/rodan/internal/utils/values"
 )
 
-var CacheMiddleware gin.HandlerFunc = func(ctx *gin.Context) {
+func CacheMiddleware(ctx *gin.Context) {
 	cache_time := values.GetConfig().App.CacheDuration
 	ctx.Header("Cache-Control", fmt.Sprintf("public,max-age=%.0f", cache_time.Seconds()))
 	ctx.Header("Expires", time.Now().Add(cache_time).Format(http.TimeFormat))

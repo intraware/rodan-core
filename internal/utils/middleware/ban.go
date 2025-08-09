@@ -8,7 +8,7 @@ import (
 	"github.com/intraware/rodan/internal/models"
 )
 
-var BanMiddleware gin.HandlerFunc = func(ctx *gin.Context) {
+func BanMiddleware(ctx *gin.Context) {
 	user_id := ctx.GetInt("user_id")
 	var user models.User
 	if val, ok := shared.UserCache.Get(user_id); ok {
