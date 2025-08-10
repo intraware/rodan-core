@@ -607,10 +607,33 @@ func SubmitFlag(ctx *gin.Context) {
 		}
 		return true
 	})
-	if len(flag_values) > 0 {
+	if len(flag_values) > 0 && (values.GetConfig().App.Ban.UserBan || values.GetConfig().App.Ban.TeamBan) {
+		banReason := "submit_someone_flag"
+		tx := models.DB.Begin()
+		var count int64
 		if values.GetConfig().App.Ban.UserBan {
+			tx.Model(&models.BanHistory{}).
+				Where("user_id = ?", user.ID).
+				Count(&count)
+		} else if values.GetConfig().App.Ban.TeamBan {
+			tx.Model(&models.BanHistory{}).
+				Where("team_id = ?", user.TeamID).
+				Count(&count)
+		}
+		expiration := time.Now().Add(calcBanDuration(int(count))).Unix()
+		if err := tx.Error; err != nil {
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
+			return
+		}
+		var key string
+		var ban models.BanHistory
+		ban.Context = banReason
+		ban.ExpiresAt = expiration
+		if values.GetConfig().App.Ban.UserBan {
+			key = fmt.Sprintf("%d:%d", user.ID, *user.TeamID)
 			user.Ban = true
-			if err := models.DB.Save(&user).Error; err != nil {
+			if err := tx.Save(&user).Error; err != nil {
+				tx.Rollback()
 				auditLog.WithFields(logrus.Fields{
 					"event":     "user_ban",
 					"status":    "failure",
@@ -620,25 +643,16 @@ func SubmitFlag(ctx *gin.Context) {
 					"challenge": challengeID,
 					"ip":        ctx.ClientIP(),
 					"error":     err.Error(),
-				}).Error("Failed to record User ban")
+				}).Error("Failed to ban user")
 				ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to update user status"})
 				return
-			} else {
-				auditLog.WithFields(logrus.Fields{
-					"event":     "submit_flag",
-					"status":    "failure",
-					"reason":    "submit_other_flag",
-					"user_id":   user.ID,
-					"team_id":   teamID,
-					"challenge": challengeID,
-					"ip":        ctx.ClientIP(),
-				}).Error("User has submitted someone else's flag")
-				shared.UserCache.Delete(user.ID)
-				ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Account got banned"})
-				return
 			}
-		} else if values.GetConfig().App.Ban.TeamBan {
-			if err := models.DB.Where("id = ?", *user.TeamID).Update("ban", true).Error; err != nil {
+			ban.UserID = &userID
+		}
+		if values.GetConfig().App.Ban.TeamBan {
+			key = fmt.Sprintf(":%d", teamID)
+			if err := tx.Model(&models.Team{}).Where("id = ?", *user.TeamID).Update("ban", true).Error; err != nil {
+				tx.Rollback()
 				auditLog.WithFields(logrus.Fields{
 					"event":     "team_ban",
 					"status":    "failure",
@@ -648,23 +662,53 @@ func SubmitFlag(ctx *gin.Context) {
 					"challenge": challengeID,
 					"ip":        ctx.ClientIP(),
 					"error":     err.Error(),
-				}).Error("Failed to record Team ban")
+				}).Error("Failed to ban team")
 				ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to update team status"})
 				return
-			} else {
-				auditLog.WithFields(logrus.Fields{
-					"event":     "submit_flag",
-					"status":    "failure",
-					"reason":    "submit_other_flag",
-					"user_id":   user.ID,
-					"team_id":   teamID,
-					"challenge": challengeID,
-					"ip":        ctx.ClientIP(),
-				}).Error("Team has submitted someone else's flag")
-				shared.TeamCache.Delete(*user.TeamID)
-				ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Team account got banned"})
-				return
 			}
+			ban.UserID = &userID
+			ban.TeamID = user.TeamID
+		}
+		if err := tx.Create(&ban).Error; err != nil {
+			tx.Rollback()
+			auditLog.WithFields(logrus.Fields{
+				"event":     "ban_history",
+				"status":    "failure",
+				"reason":    "db_error_solve",
+				"user_id":   user.ID,
+				"team_id":   teamID,
+				"challenge": challengeID,
+				"ip":        ctx.ClientIP(),
+				"error":     err.Error(),
+			}).Error("Failed to create ban history")
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to record ban history"})
+			return
+		} else {
+			shared.BanHistoryCache.Set(key, ban)
+			var sandboxes []sandbox.SandBox // TODO: tomorrow
+			stopAllContainers(sandboxes)
+		}
+		if err := tx.Commit().Error; err != nil {
+			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to finalize ban"})
+			return
+		}
+		auditLog.WithFields(logrus.Fields{
+			"event":     "submit_flag",
+			"status":    "failure",
+			"reason":    "submit_other_flag",
+			"user_id":   user.ID,
+			"team_id":   teamID,
+			"challenge": challengeID,
+			"ip":        ctx.ClientIP(),
+		}).Error("Unauthorized flag submission — ban issued")
+		shared.UserCache.Delete(user.ID)
+		if user.TeamID != nil {
+			shared.TeamCache.Delete(*user.TeamID)
+		}
+		if values.GetConfig().App.Ban.UserBan {
+			ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Account got banned"})
+		} else {
+			ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Team account got banned"})
 		}
 	}
 	solve := models.Solve{

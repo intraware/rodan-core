@@ -8,6 +8,8 @@ import (
 	"github.com/intraware/rodan/internal/models"
 )
 
+//TODO: check the expiry and unban people
+
 func BanMiddleware(ctx *gin.Context) {
 	user_id := ctx.GetInt("user_id")
 	var user models.User

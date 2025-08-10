@@ -45,3 +45,10 @@ var StaticConfig = cacher.NewCacher[int, models.StaticConfig](&cacher.NewCacherO
 	CleanerMode:   cacher.CleaningCentral,
 	Revaluate:     true,
 })
+
+var BanHistoryCache = cacher.NewCacher[string, models.BanHistory](&cacher.NewCacherOpts{
+	TimeToLive:    time.Minute * 10,
+	CleanInterval: time.Hour * 2,
+	CleanerMode:   cacher.CleaningCentral,
+	Revaluate:     true,
+})
