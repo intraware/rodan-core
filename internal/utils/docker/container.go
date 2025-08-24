@@ -113,7 +113,7 @@ func RunCommand(ctx context.Context, containerID, command string) (err error) {
 	}
 	exe, err := dockerClient.ContainerExecCreate(ctx, containerID, container.ExecOptions{
 		User:       "rodan",
-		Privileged: false,
+		Privileged: false, // TODO: need verification
 		Tty:        false,
 		Cmd:        cmd,
 		WorkingDir: "/",
