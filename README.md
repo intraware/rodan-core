@@ -39,10 +39,16 @@ HackVault aims to be a highly efficient backend for CTF (Capture The Flag) platf
 - [ ] correct and optimise all the request and response json
 - [ ] add a query and response summary for all endpoints, some kind of swagger docs or just a routes.md
 - [ ] implement leaderboard sort from backend
-- [ ] implement cache
+- [x] implement cache
 - [ ] add forgot password for user
 - [ ] change the code change for team logic
 - [ ] add the points function (dynamic)
 - [ ] implement notifications (SSE)
 - [ ] admin panel (admin & sudo admin)
 - [ ] add text files checking if things go kaboom
+
+## Libraries Used
+This project makes use of external libraries, with additional functionality built on top where needed.
+We’d like to acknowledge and thank the following:
+* [redis-cache](https://github.com/go-redis/cache)
+* [go-tinylfu](https://github.com/vmihailenco/go-tinylfu)

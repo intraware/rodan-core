@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/intraware/rodan/api/shared"
-	"github.com/intraware/rodan/models"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/sandbox"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 const (
@@ -145,4 +146,22 @@ func generateHashedFlag(challengeID, teamID int) string {
 	hash := sha256.Sum256([]byte(input))
 	hashHex := hex.EncodeToString(hash[:])
 	return fmt.Sprintf("%s{%s}", cfg.App.FlagFormat, hashHex[:32])
+}
+
+func calcBanDuration(strikes int) time.Duration {
+	cfg := values.GetConfig().App.Ban
+	if strikes <= 0 {
+		return 0
+	}
+	durationMinutes := cfg.InitialBanDuration.Minutes() * math.Pow(cfg.BanGrowthFactor, float64(strikes-1))
+	duration := time.Duration(durationMinutes) * time.Minute
+	if duration > cfg.MaxBanDuration {
+		return cfg.MaxBanDuration
+	}
+	return duration
+}
+
+func stopAllContainers(ban_sandbox []sandbox.SandBox) (err error) {
+	err = nil
+	return
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/api/team"
 	"github.com/intraware/rodan/api/user"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 func LoadRoutes(r *gin.Engine) {

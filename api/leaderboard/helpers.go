@@ -10,8 +10,8 @@ import (
 	"sort"
 
 	"github.com/intraware/rodan/api/shared"
-	"github.com/intraware/rodan/models"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 type UserPoints struct {

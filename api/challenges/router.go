@@ -3,7 +3,7 @@ package challenges
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/challenges/handlers"
-	"github.com/intraware/rodan/utils/middleware"
+	"github.com/intraware/rodan/internal/utils/middleware"
 )
 
 func LoadChallenges(r *gin.RouterGroup) {
@@ -11,7 +11,7 @@ func LoadChallenges(r *gin.RouterGroup) {
 	challengeRouter.GET("/list", middleware.CacheMiddleware, handlers.GetChallengeList) // TODO: gotta support chained challenges
 
 	// Protected routes
-	protectedRouter := challengeRouter.Group("/", middleware.AuthRequired
+	protectedRouter := challengeRouter.Group("/", middleware.AuthRequired)
 	protectedRouter.GET("/:id", middleware.CacheMiddleware, handlers.GetChallengeDetail)
 	protectedRouter.GET("/:id/config", handlers.GetChallengeConfig)
 	protectedRouter.POST("/:id/submit", handlers.SubmitFlag)

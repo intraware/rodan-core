@@ -1,13 +1,5 @@
 package team
 
-type errorResponse struct {
-	Error string `json:"error" example:"Something went wrong"`
-}
-
-type successResponse struct {
-	Message string `json:"message" example:"Something went right"`
-}
-
 type createTeamRequest struct {
 	Name string `json:"name" binding:"required" example:"Avengers"`
 }

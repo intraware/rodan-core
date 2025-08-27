@@ -2,7 +2,7 @@ package leaderboard
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/intraware/rodan/utils/values"
+	"github.com/intraware/rodan/internal/utils/values"
 )
 
 func LoadLeaderboard(r *gin.RouterGroup) {

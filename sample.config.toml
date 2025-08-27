@@ -30,7 +30,6 @@ email-regex = ""
 token-expiry = "10m"
 totp-issuer = "intraware"
 team-size = 3
-ban-mode = "user"
 team-container-limit = 3
 flag-format = "rodan"
 frontend-cache-duration = "60s"
@@ -50,4 +49,10 @@ enable-team-ban = false
 initial-ban-duration = "30m" 
 ban-growth-factor = 2.5
 max-ban-duration = "24h" 
-track-history = true
+
+[app.cache]
+in-app = false
+service-url = "redis://cache:6379"
+service-type = "redis"
+internal-cache-size = 1000 # (skip mentioning this if you are using in-app cache)
+internal-cache-duration = "1m" # (skip mentioning this if you are using in-app cache)

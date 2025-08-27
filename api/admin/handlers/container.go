@@ -17,7 +17,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  []sandbox.Container
-// @Failure      500  {object}  errorResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/container/all [get]
 func GetAllContainers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -30,7 +30,7 @@ func GetAllContainers(ctx *gin.Context) {
 			"reason": "internal_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Failed to get all containers")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to get all containers"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to get all containers"})
 		return
 	}
 	ctx.JSON(http.StatusOK, containers)
@@ -43,8 +43,8 @@ func GetAllContainers(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  successResponse
-// @Failure      500  {object}  errorResponse
+// @Success      200  {object}  types.SuccessResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/container/stop_all [delete]
 func StopAllContainers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -56,7 +56,7 @@ func StopAllContainers(ctx *gin.Context) {
 			"reason": "internal_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Failed to stop all containers")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to stop all containers"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to stop all containers"})
 		return
 	}
 	auditLog.WithFields(logrus.Fields{
@@ -64,7 +64,7 @@ func StopAllContainers(ctx *gin.Context) {
 		"status": "success",
 		"ip":     ctx.ClientIP(),
 	}).Info("All containers stopped successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "All containers stopped successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "All containers stopped successfully"})
 }
 
 // KillAllContainers godoc
@@ -74,8 +74,8 @@ func StopAllContainers(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  successResponse
-// @Failure      500  {object}  errorResponse
+// @Success      200  {object}  types.SuccessResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/container/kill_all [post]
 func KillAllContainers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -87,7 +87,7 @@ func KillAllContainers(ctx *gin.Context) {
 			"reason": "internal_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Failed to kill all containers")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to kill all containers"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to kill all containers"})
 		return
 	}
 	auditLog.WithFields(logrus.Fields{
@@ -95,7 +95,7 @@ func KillAllContainers(ctx *gin.Context) {
 		"status": "success",
 		"ip":     ctx.ClientIP(),
 	}).Info("All containers killed successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "All containers killed successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "All containers killed successfully"})
 }
 
 // StopContainer godoc
@@ -106,8 +106,8 @@ func KillAllContainers(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Container ID"
-// @Success      200  {object}  successResponse
-// @Failure      500  {object}  errorResponse
+// @Success      200  {object}  types.SuccessResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/container/stop [delete]
 func StopContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -121,7 +121,7 @@ func StopContainer(ctx *gin.Context) {
 			"container_id": containerID,
 			"ip":           ctx.ClientIP(),
 		}).Error("Failed to stop container")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to stop container"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to stop container"})
 		return
 	}
 	auditLog.WithFields(logrus.Fields{
@@ -130,7 +130,7 @@ func StopContainer(ctx *gin.Context) {
 		"container_id": containerID,
 		"ip":           ctx.ClientIP(),
 	}).Info("Container stopped successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "Container stopped successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Container stopped successfully"})
 }
 
 // StopTeamContainer godoc
@@ -141,8 +141,8 @@ func StopContainer(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Team ID"
-// @Success      200  {object}  successResponse
-// @Failure      500  {object}  errorResponse
+// @Success      200  {object}  types.SuccessResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/container/stop_team [delete]
 func StopTeamContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -156,7 +156,7 @@ func StopTeamContainer(ctx *gin.Context) {
 			"team_id": teamID,
 			"ip":      ctx.ClientIP(),
 		}).Error("Failed to stop team container")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to stop team container"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to stop team container"})
 		return
 	}
 	auditLog.WithFields(logrus.Fields{
@@ -165,7 +165,7 @@ func StopTeamContainer(ctx *gin.Context) {
 		"team_id": teamID,
 		"ip":      ctx.ClientIP(),
 	}).Info("Team container stopped successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "Team container stopped successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Team container stopped successfully"})
 }
 
 // StopChallengeContainer godoc
@@ -176,8 +176,8 @@ func StopTeamContainer(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Challenge ID"
-// @Success      200  {object}  successResponse
-// @Failure      500  {object}  errorResponse
+// @Success      200  {object}  types.SuccessResponse
+// @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/container/stop_challenge [delete]
 func StopChallengeContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
@@ -191,7 +191,7 @@ func StopChallengeContainer(ctx *gin.Context) {
 			"challenge_id": challengeID,
 			"ip":           ctx.ClientIP(),
 		}).Error("Failed to stop challenge container")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Failed to stop challenge container"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to stop challenge container"})
 		return
 	}
 	auditLog.WithFields(logrus.Fields{
@@ -200,5 +200,5 @@ func StopChallengeContainer(ctx *gin.Context) {
 		"challenge_id": challengeID,
 		"ip":           ctx.ClientIP(),
 	}).Info("Challenge container stopped successfully")
-	ctx.JSON(http.StatusOK, successResponse{Message: "Challenge container stopped successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Challenge container stopped successfully"})
 }
