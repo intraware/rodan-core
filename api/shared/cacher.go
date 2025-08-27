@@ -3,52 +3,52 @@ package shared
 import (
 	"time"
 
-	"github.com/AnimeKaizoku/cacher"
+	"github.com/intraware/rodan/internal/cache"
 	"github.com/intraware/rodan/internal/models"
 )
 
-var UserCache = cacher.NewCacher[int, models.User](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 3,
-	CleanInterval: time.Hour * 2,
-	CleanerMode:   cacher.CleaningCentral,
-	Revaluate:     true,
+var UserCache = cache.NewCache[int, models.User](&cache.CacheOpts{
+	TimeToLive:    3 * time.Minute,
+	CleanInterval: ptr(time.Hour * 2),
+	Revaluate:     ptr(true),
 })
 
-var TeamCache = cacher.NewCacher[int, models.Team](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 3,
-	CleanInterval: time.Hour * 2,
-	CleanerMode:   cacher.CleaningCentral,
-	Revaluate:     true,
+var TeamCache = cache.NewCache[int, models.Team](&cache.CacheOpts{
+	TimeToLive:    3 * time.Minute,
+	CleanInterval: ptr(time.Hour * 2),
+	Revaluate:     ptr(true),
 })
 
-var LoginCache = cacher.NewCacher[string, models.User](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 2,
-	CleanInterval: time.Hour * 2,
-	CleanerMode:   cacher.CleaningCentral,
-	Revaluate:     true,
+var LoginCache = cache.NewCache[string, models.User](&cache.CacheOpts{
+	TimeToLive:    2 * time.Minute,
+	CleanInterval: ptr(time.Hour * 2),
+	Revaluate:     ptr(true),
 })
 
-var ResetPasswordCache *cacher.Cacher[string, models.User]
+var ResetPasswordCache cache.Cache[string, models.User]
 
-var ChallengeCache = cacher.NewCacher[int, models.Challenge](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 3,
-	CleanInterval: time.Hour * 2,
-	CleanerMode:   cacher.CleaningCentral,
-	Revaluate:     true,
+var ChallengeCache = cache.NewCache[int, models.Challenge](&cache.CacheOpts{
+	TimeToLive:    3 * time.Minute,
+	CleanInterval: ptr(time.Hour * 2),
+	Revaluate:     ptr(true),
 })
 
-var TeamSolvedCache = cacher.NewCacher[string, bool](nil)
-
-var StaticConfig = cacher.NewCacher[int, models.StaticConfig](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 3,
-	CleanInterval: time.Hour * 2,
-	CleanerMode:   cacher.CleaningCentral,
-	Revaluate:     true,
+var TeamSolvedCache = cache.NewCache[string, bool](&cache.CacheOpts{
+	TimeToLive:    0,
+	CleanInterval: ptr(time.Hour * 2),
+	Revaluate:     ptr(false),
 })
 
-var BanHistoryCache = cacher.NewCacher[string, models.BanHistory](&cacher.NewCacherOpts{
-	TimeToLive:    time.Minute * 10,
-	CleanInterval: time.Hour * 2,
-	CleanerMode:   cacher.CleaningCentral,
-	Revaluate:     true,
+var StaticConfig = cache.NewCache[int, models.StaticConfig](&cache.CacheOpts{
+	TimeToLive:    3 * time.Minute,
+	CleanInterval: ptr(time.Hour * 2),
+	Revaluate:     ptr(true),
 })
+
+var BanHistoryCache = cache.NewCache[string, models.BanHistory](&cache.CacheOpts{
+	TimeToLive:    10 * time.Minute,
+	CleanInterval: ptr(time.Hour * 2),
+	Revaluate:     ptr(true),
+})
+
+func ptr[T any](v T) *T { return &v }

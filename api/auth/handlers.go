@@ -143,10 +143,7 @@ func login(ctx *gin.Context) {
 	}
 	var user models.User
 	cacheHit := false
-	if val, ok := shared.LoginCache.Get(req.Username); ok {
-		user = val
-		cacheHit = true
-	} else {
+	if user, cacheHit := shared.LoginCache.Get(req.Username); cacheHit {
 		if err := models.DB.Where("username = ?", req.Username).Preload("Team").First(&user).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				auditLog.WithFields(logrus.Fields{

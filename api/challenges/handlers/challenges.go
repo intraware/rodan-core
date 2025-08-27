@@ -311,9 +311,9 @@ func GetChallengeConfig(ctx *gin.Context) {
 	// for files .. store in links
 	var response challengeConfigResponse
 	if challenge.IsStatic {
-		static_config, staticConfigCacheHit := shared.StaticConfig.Get(challenge.ID)
+		staticConfig, staticConfigCacheHit := shared.StaticConfig.Get(challenge.ID)
 		if !staticConfigCacheHit {
-			if err := models.DB.Where("challenge_id = ?", challenge.ID).First(&static_config).Error; err != nil {
+			if err := models.DB.Where("challenge_id = ?", challenge.ID).First(&staticConfig).Error; err != nil {
 				auditLog.WithFields(logrus.Fields{
 					"event":         "get_challenge_config",
 					"status":        "failure",
@@ -330,18 +330,18 @@ func GetChallengeConfig(ctx *gin.Context) {
 				ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to retrieve data from DB"})
 				return
 			} else {
-				shared.StaticConfig.Set(challenge.ID, static_config)
+				shared.StaticConfig.Set(challenge.ID, staticConfig)
 			}
 		}
 		response = challengeConfigResponse{
 			ID:       challenge.ID,
-			Links:    static_config.Links,
-			Ports:    static_config.Ports,
+			Links:    staticConfig.Links,
+			Ports:    staticConfig.Ports,
 			IsStatic: true,
 		}
-		cache_time := values.GetConfig().App.CacheDuration
-		ctx.Header("Cache-Control", fmt.Sprintf("public,max-age=%.0f", cache_time.Seconds()))
-		ctx.Header("Expires", time.Now().Add(cache_time).Format(http.TimeFormat))
+		cacheTime := values.GetConfig().App.CacheDuration
+		ctx.Header("Cache-Control", fmt.Sprintf("public,max-age=%.0f", cacheTime.Seconds()))
+		ctx.Header("Expires", time.Now().Add(cacheTime).Format(http.TimeFormat))
 		auditLog.WithFields(logrus.Fields{
 			"event":             "get_challenge_config",
 			"status":            "success",
@@ -357,7 +357,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 			"ip":                ctx.ClientIP(),
 		}).Info("Fetched static challenge config successfully")
 	} else {
-		challenge_sandbox, ok := shared.SandBoxMap[*user.TeamID]
+		challengeSandbox, ok := shared.SandBoxMap[*user.TeamID]
 		if !ok {
 			auditLog.WithFields(logrus.Fields{
 				"event":         "get_challenge_config",
@@ -375,7 +375,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "The user doesnt have a sandbox created"})
 			return
 		}
-		if !challenge_sandbox.Active {
+		if !challengeSandbox.Active {
 			auditLog.WithFields(logrus.Fields{
 				"event":         "get_challenge_config",
 				"status":        "failure",
@@ -392,8 +392,8 @@ func GetChallengeConfig(ctx *gin.Context) {
 			ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "The user doesnt have sandbox active"})
 			return
 		}
-		var sandbox_meta sandbox.SandBoxResponse
-		if val, err := challenge_sandbox.GetMeta(); err != nil {
+		var sandboxMeta sandbox.SandBoxResponse
+		if val, err := challengeSandbox.GetMeta(); err != nil {
 			auditLog.WithFields(logrus.Fields{
 				"event":         "get_challenge_config",
 				"status":        "failure",
@@ -411,15 +411,15 @@ func GetChallengeConfig(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to get meta of sandbox"})
 			return
 		} else {
-			sandbox_meta = val
+			sandboxMeta = val
 		}
 		response = challengeConfigResponse{
 			ID:       challenge.ID,
-			Links:    sandbox_meta.Links,
-			TimeLeft: sandbox_meta.TimeLeft,
+			Links:    sandboxMeta.Links,
+			TimeLeft: sandboxMeta.TimeLeft,
 			IsStatic: false,
 		}
-		for v := range sandbox_meta.Ports {
+		for v := range sandboxMeta.Ports {
 			response.Ports = append(response.Ports, int(v))
 		}
 		auditLog.WithFields(logrus.Fields{
@@ -600,14 +600,14 @@ func SubmitFlag(ctx *gin.Context) {
 		})
 		return
 	}
-	var flag_values []string
+	var flagValues []string
 	dynFlagMap.Range(func(key, value any) bool {
 		if req.Flag == value {
-			flag_values = append(flag_values, value.(string))
+			flagValues = append(flagValues, value.(string))
 		}
 		return true
 	})
-	if len(flag_values) > 0 && (values.GetConfig().App.Ban.UserBan || values.GetConfig().App.Ban.TeamBan) {
+	if len(flagValues) > 0 && (values.GetConfig().App.Ban.UserBan || values.GetConfig().App.Ban.TeamBan) {
 		banReason := "submit_someone_flag"
 		tx := models.DB.Begin()
 		var count int64

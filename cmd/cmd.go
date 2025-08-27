@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api"
+	"github.com/intraware/rodan/internal/cache"
 	"github.com/intraware/rodan/internal/models"
 	"github.com/intraware/rodan/internal/utils"
 	"github.com/intraware/rodan/internal/utils/docker"
@@ -20,6 +22,7 @@ func Run() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 	cfg := values.GetConfig()
+	ctx := context.Background()
 	models.InitDB(cfg)
 	utils.NewLogger(cfg.Server.Production)
 	if err := docker.SetupDockerClient(); err != nil {
@@ -35,6 +38,9 @@ func Run() {
 	r.Use(middleware.CORS(cfg.Server))
 	r.Use(gin.Recovery())
 	api.LoadRoutes(r)
+	if !cfg.App.AppCache.InApp {
+		cache.InitRedis(ctx)
+	}
 	fmt.Printf("[ENGINE] Server started at %s:%d\n", cfg.Server.Host, cfg.Server.Port)
 	r.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
 }

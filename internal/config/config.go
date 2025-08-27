@@ -65,9 +65,11 @@ type AppConfig struct {
 }
 
 type CacheConfig struct {
-	InApp       bool   `mapstructure:"in-app"`
-	ServiceUrl  string `mapstructure:"service-url"`
-	ServiceType string `mapstructure:"service-type"`
+	InApp                 bool          `mapstructure:"in-app"`
+	ServiceUrl            string        `mapstructure:"service-url"`
+	ServiceType           string        `mapstructure:"service-type"`
+	InternalCacheSize     int           `mapstructure:"internal-cache-size"`
+	InternalCacheDuration time.Duration `mapstructure:"internal-cache-duration"`
 }
 
 type LeaderboardConfig struct {
