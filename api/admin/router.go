@@ -18,8 +18,8 @@ func LoadUser(r *gin.RouterGroup) {
 	adminRouter.POST("/flush_cache", handlers.FlushCache)
 	adminRouter.POST("/close_submission", handlers.CloseChallengeSubmission)
 	adminRouter.POST("/open_submission", handlers.OpenChallengeSubmission)
-	adminRouter.POST("/close_login", handlers.CloseChallengeLogin)
-	adminRouter.POST("/open_login", handlers.OpenChallengeLogin)
+	adminRouter.POST("/close_login", handlers.CloseLogin)
+	adminRouter.POST("/open_login", handlers.OpenLogin)
 
 	// Challenge related routes
 	challengeRouter := adminRouter.Group("/challenge")

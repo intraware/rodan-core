@@ -335,7 +335,7 @@ func RemoveUserFromTeam(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in removeUserFromTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -347,7 +347,7 @@ func RemoveUserFromTeam(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in removeUserFromTeam")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 
@@ -371,7 +371,7 @@ func AddUserToTeam(ctx *gin.Context) {
 			"reason": "invalid_request",
 			"ip":     ctx.ClientIP(),
 		}).Warn("Invalid request in addUserToTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
 
@@ -382,7 +382,7 @@ func AddUserToTeam(ctx *gin.Context) {
 			"reason": "no_team_id",
 			"ip":     ctx.ClientIP(),
 		}).Warn("No team ID provided in addUserToTeam")
-		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "No team ID provided"})
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "No team ID provided"})
 		return
 	}
 
@@ -393,7 +393,7 @@ func AddUserToTeam(ctx *gin.Context) {
 			"reason": "database_error",
 			"ip":     ctx.ClientIP(),
 		}).Error("Database error in addUserToTeam")
-		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
 

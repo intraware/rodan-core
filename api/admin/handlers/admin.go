@@ -5,8 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/shared"
-	"github.com/intraware/rodan/models"
-	"github.com/intraware/rodan/utils"
+	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/types"
+	"github.com/intraware/rodan/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -178,7 +179,7 @@ func DeleteAdmin(ctx *gin.Context) {
 // @Success      200         {object}  types.SuccessResponse
 // @Failure      400         {object}  types.ErrorResponse
 // @Router       /admin/flush_cache [post]
-func flush_cache(ctx *gin.Context) {
+func FlushCache(ctx *gin.Context) {
 	// take a parameter to flush specific cache objesct or all cache
 	auditLog := utils.Logger.WithField("type", "audit")
 	cacheType := ctx.Query("type")
@@ -284,3 +285,22 @@ func flush_cache(ctx *gin.Context) {
 	}
 }
 
+func CloseChallengeSubmission(ctx *gin.Context) {
+	// TODO
+}
+
+func OpenChallengeSubmission(ctx *gin.Context) {
+	// TODO
+}
+
+func ResetPassword(ctx *gin.Context) {
+	// TODO
+}
+
+func CloseLogin(ctx *gin.Context) {
+	// TODO
+}
+
+func OpenLogin(ctx *gin.Context) {
+	// TODO
+}

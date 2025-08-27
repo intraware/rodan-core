@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/internal/sandbox"
-	"github.com/intraware/rodan/utils"
+	"github.com/intraware/rodan/internal/types"
+	"github.com/intraware/rodan/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
