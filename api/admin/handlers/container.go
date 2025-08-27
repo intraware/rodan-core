@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/intraware/rodan/sandbox"
+	"github.com/intraware/rodan/internal/sandbox"
 	"github.com/intraware/rodan/utils"
 	"github.com/sirupsen/logrus"
 )

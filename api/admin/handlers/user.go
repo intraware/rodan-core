@@ -322,3 +322,85 @@ func UnblacklistUser(ctx *gin.Context) {
 	}).Info("User unblacklisted successfully")
 	ctx.JSON(http.StatusOK, gin.H{"message": "User unblacklisted successfully"})
 }
+
+func RemoveUserFromTeam(ctx *gin.Context) {
+	auditLog := utils.Logger.WithField("type", "audit")
+	var user models.User
+
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":  "remove_user_from_team",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
+		}).Warn("Invalid request in removeUserFromTeam")
+		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		return
+	}
+
+	user.TeamID = nil
+	if err := models.DB.Save(&user).Error; err != nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":  "remove_user_from_team",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
+		}).Error("Database error in removeUserFromTeam")
+		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		return
+	}
+
+	auditLog.WithFields(logrus.Fields{
+		"event":   "remove_user_from_team",
+		"status":  "success",
+		"user_id": user.ID,
+		"ip":      ctx.ClientIP(),
+	}).Info("User removed from team successfully")
+	ctx.JSON(http.StatusOK, gin.H{"message": "User removed from team successfully"})
+}
+
+func AddUserToTeam(ctx *gin.Context) {
+	auditLog := utils.Logger.WithField("type", "audit")
+	var user models.User
+
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":  "add_user_to_team",
+			"status": "failure",
+			"reason": "invalid_request",
+			"ip":     ctx.ClientIP(),
+		}).Warn("Invalid request in addUserToTeam")
+		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "Invalid request"})
+		return
+	}
+
+	if user.TeamID == nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":  "add_user_to_team",
+			"status": "failure",
+			"reason": "no_team_id",
+			"ip":     ctx.ClientIP(),
+		}).Warn("No team ID provided in addUserToTeam")
+		ctx.JSON(http.StatusBadRequest, errorResponse{Error: "No team ID provided"})
+		return
+	}
+
+	if err := models.DB.Save(&user).Error; err != nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":  "add_user_to_team",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
+		}).Error("Database error in addUserToTeam")
+		ctx.JSON(http.StatusInternalServerError, errorResponse{Error: "Database error"})
+		return
+	}
+
+	auditLog.WithFields(logrus.Fields{
+		"event":   "add_user_to_team",
+		"status":  "success",
+		"user_id": user.ID,
+		"ip":      ctx.ClientIP(),
+	}).Info("User added to team successfully")
+	ctx.JSON(http.StatusOK, gin.H{"message": "User added to team successfully"})
+}
