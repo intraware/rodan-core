@@ -1,6 +1,6 @@
 module github.com/intraware/rodan
 
-go 1.24.1
+go 1.24.6
 
 require (
 	github.com/AnimeKaizoku/cacher v1.0.3-0.20250629133904-5bdf0cc1d3f7
@@ -15,15 +15,12 @@ require (
 	github.com/klauspost/compress v1.13.6
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.25.0
-	github.com/pquerna/otp v1.5.0
 	github.com/redis/go-redis/v9 v9.0.0-rc.4
 	github.com/sirupsen/logrus v1.9.3
-	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	github.com/vmihailenco/go-tinylfu v0.2.2
 	github.com/vmihailenco/msgpack/v5 v5.3.4
-	golang.org/x/crypto v0.39.0
 	golang.org/x/sync v0.16.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.30.0
@@ -31,7 +28,6 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 	github.com/bytedance/sonic v1.13.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
@@ -93,6 +89,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.18.0 // indirect
+	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
