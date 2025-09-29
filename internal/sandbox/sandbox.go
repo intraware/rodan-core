@@ -13,8 +13,8 @@ import (
 var containerPool = newPool()
 
 type SandBox struct {
-	UserID        int
-	TeamID        int
+	UserID        uint
+	TeamID        uint
 	ChallengeMeta models.Challenge
 	Container     *container
 	CreatedAt     time.Time
@@ -24,7 +24,7 @@ type SandBox struct {
 	CancelFunc    context.CancelFunc
 }
 
-func NewSandBox(userID, teamID int, challenge *models.Challenge, flag string) *SandBox {
+func NewSandBox(userID, teamID uint, challenge *models.Challenge, flag string) *SandBox {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(challenge.DynamicConfig.TTL))
 	return &SandBox{
 		UserID:        userID,
@@ -130,7 +130,7 @@ func (s *SandBox) Regenerate(challenge *models.Challenge) (err error) {
 		return
 	}
 	var ctr *container
-	container_name := fmt.Sprintf("%d-%d-%d", s.UserID, s.TeamID, s.ChallengeMeta.ID)
+	containerName := fmt.Sprintf("%d-%d-%d", s.UserID, s.TeamID, s.ChallengeMeta.ID)
 	ttl := time.Duration(challenge.DynamicConfig.TTL)
 	ctx, cancel := context.WithTimeout(context.Background(), ttl)
 	s.Context = ctx
@@ -138,7 +138,7 @@ func (s *SandBox) Regenerate(challenge *models.Challenge) (err error) {
 	ctr, err = newContainer(
 		s.Context,
 		s.ChallengeMeta.ID,
-		container_name,
+		containerName,
 		s.ChallengeMeta.DynamicConfig.DockerImage,
 		time.Duration(s.ChallengeMeta.DynamicConfig.TTL),
 		s.ChallengeMeta.DynamicConfig.ExposedPorts,

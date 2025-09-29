@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/internal/sandbox"
 	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
@@ -19,11 +20,13 @@ import (
 // @Produce      json
 // @Success      200  {object}  []sandbox.Container
 // @Failure      500  {object}  types.ErrorResponse
-// @Router       /admin/container/all [get]
-func GetAllContainers(ctx *gin.Context) {
+// @Router       /admin/sandbox/all [get]
+func GetAllSandboxes(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	container := sandbox.Container{}
-	containers, err := container.GetAll()
+	var boxes []sandbox.SandBox
+	for _, v := range shared.SandBoxMap {
+		boxes = append(boxes, *v)
+	}
 	if err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "get_all_containers",

@@ -6,12 +6,8 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o rodan .
 
-
-FROM alpine:latest AS runner
-RUN apk --no-cache add ca-certificates docker-cli
-WORKDIR /app
-COPY --from=builder /app/rodan .
-EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8000/api/ping || exit 1
-CMD ["./rodan"]
+FROM gcr.io/distroless/cc AS runner
+WORKDIR /root
+COPY --from=builder /app/target/release/rodan .
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+CMD ["/root/rodan"]

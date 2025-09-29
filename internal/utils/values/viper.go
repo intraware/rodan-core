@@ -1,10 +1,11 @@
 package values
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/intraware/rodan/internal/config"
@@ -50,12 +51,9 @@ func InitWithViper(path string) error {
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
 	}
-	if cfg.App.EmailRegex != "" {
-		regex, err := regexp.Compile(cfg.App.EmailRegex)
-		if err != nil {
-			return fmt.Errorf("invalid email regex in config: %w", err)
-		}
-		cfg.App.CompiledEmail = regex
+	if cfg.App.Notification.HTTP != nil && cfg.App.Notification.HTTP.APIKey != "" {
+		hash := sha256.Sum256([]byte(cfg.App.Notification.HTTP.APIKey))
+		cfg.App.Notification.HTTP.HashedAPIKey = hex.EncodeToString(hash[:])
 	}
 	if err := cfg.Validate(); err != nil {
 		return err
@@ -69,6 +67,10 @@ func InitWithViper(path string) error {
 			log.Println("[CONFIG] Failed to reload config:", err)
 			return
 		}
+		if cfg.App.Notification.HTTP != nil && cfg.App.Notification.HTTP.APIKey != "" {
+			hash := sha256.Sum256([]byte(cfg.App.Notification.HTTP.APIKey))
+			cfg.App.Notification.HTTP.HashedAPIKey = hex.EncodeToString(hash[:])
+		}
 		if err := newCfg.Validate(); err != nil {
 			log.Println("[CONFIG] Validation failed after reload:", err)
 			return
@@ -76,18 +78,6 @@ func InitWithViper(path string) error {
 		oldCfg := GetConfig()
 		if !reloadEqual(oldCfg.Server, newCfg.Server) ||
 			!reloadEqual(oldCfg.App, newCfg.App) {
-			if oldCfg.App.EmailRegex != newCfg.App.EmailRegex {
-				if newCfg.App.EmailRegex != "" {
-					regex, err := regexp.Compile(newCfg.App.EmailRegex)
-					if err != nil {
-						log.Println("[CONFIG] Invalid email regex:", err)
-						return
-					}
-					newCfg.App.CompiledEmail = regex
-				}
-			} else {
-				newCfg.App.CompiledEmail = oldCfg.App.CompiledEmail
-			}
 			SetConfig(&newCfg)
 			log.Println("[CONFIG] Live reload applied")
 		} else {

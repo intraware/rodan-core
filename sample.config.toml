@@ -5,7 +5,7 @@ production = true
 cors-url = ["*"]
 
 [server.security]
-jwt-secret = "testing"
+jwt-secret = "testing1234555"
 flag-secret = "super-secret-flag-key"
 
 [docker]
@@ -24,13 +24,10 @@ username = "your_db_user"
 password = "your_db_password"
 database-name = "your_database"
 ssl-mode = "disable" 
+max-tries = 5
 
 [app]
-email-regex = ""
-token-expiry = "10m"
-totp-issuer = "intraware"
-team-size = 3
-team-container-limit = 3
+token-expiry = "15m"
 flag-format = "rodan"
 frontend-cache-duration = "60s"
 
@@ -56,3 +53,20 @@ service-url = "redis://cache:6379"
 service-type = "redis"
 internal-cache-size = 1000 # (skip mentioning this if you are using in-app cache)
 internal-cache-duration = "1m" # (skip mentioning this if you are using in-app cache)
+
+[app.notifications]
+enabled = true
+delivery-method = "http"
+default-retry = 3
+retry-delay = "5s"
+timeout = "10s"
+
+[app.notifications.http]
+url = "http://notification:8000"
+endpoint = "/notifications/send"
+api-key = "super-secret-notification-key"
+
+# [app.notifications.kafka]
+# brokers = ["kafka1:9092", "kafka2:9092"]
+# topic = "microservice-notifications"
+# group_id = "rodan-notifications-group"

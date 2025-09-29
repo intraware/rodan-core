@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"regexp"
 	"time"
 )
 
@@ -48,20 +47,17 @@ type DatabaseConfig struct {
 	Password     string `mapstructure:"password"`
 	DatabaseName string `mapstructure:"database-name"`
 	SSLMode      string `mapstructure:"ssl-mode"`
+	MaxTries     int    `mapstructure:"max-tries"`
 }
 
 type AppConfig struct {
-	Leaderboard        LeaderboardConfig `mapstructure:"leaderboard" reload:"true"`
-	TokenExpiry        time.Duration     `mapstructure:"token-expiry" reload:"true"`
-	TOTPIssuer         string            `mapstructure:"totp-issuer" reload:"true"`
-	TeamSize           int               `mapstructure:"team-size" reload:"true"`
-	TeamContainerLimit int               `mapstructure:"team-container-limit"`
-	FlagFormat         string            `mapstructure:"flag-format" reload:"true"`
-	CacheDuration      time.Duration     `mapstructure:"frontend-cache-duration" reload:"true"`
-	EmailRegex         string            `mapstructure:"email-regex" reload:"true"`
-	CompiledEmail      *regexp.Regexp    `mapstructure:"-"`
-	Ban                BanConfig         `mapstructure:"ban" reload:"true"`
-	AppCache           CacheConfig       `mapstructure:"cache"`
+	TokenExpiry   time.Duration      `mapstructure:"token-expiry" reload:"true"`
+	Leaderboard   LeaderboardConfig  `mapstructure:"leaderboard" reload:"true"`
+	FlagFormat    string             `mapstructure:"flag-format" reload:"true"`
+	CacheDuration time.Duration      `mapstructure:"frontend-cache-duration" reload:"true"`
+	Ban           BanConfig          `mapstructure:"ban" reload:"true"`
+	AppCache      CacheConfig        `mapstructure:"cache"`
+	Notification  NotificationConfig `mapstructure:"notifications" reload:"true"`
 }
 
 type CacheConfig struct {
@@ -78,8 +74,8 @@ type LeaderboardConfig struct {
 	DebounceTimer       time.Duration `mapstructure:"debounce-timer" reload:"true"`
 	FullPointsThreshold int           `mapstructure:"full-points-threshold" reload:"true"`
 	DecaySharpness      float64       `mapstructure:"decay-sharpness" reload:"true"`
-	UserBlackList       []int         `mapstructure:"user-blacklist" reload:"true"`
-	TeamBlackList       []int         `mapstructure:"team-blacklist" reload:"true"`
+	UserBlackList       []uint        `mapstructure:"user-blacklist" reload:"true"`
+	TeamBlackList       []uint        `mapstructure:"team-blacklist" reload:"true"`
 }
 
 type BanConfig struct {
@@ -88,6 +84,29 @@ type BanConfig struct {
 	InitialBanDuration time.Duration `mapstructure:"initial-ban-duration" reload:"true"`
 	BanGrowthFactor    float64       `mapstructure:"ban-growth-factor" reload:"true"`
 	MaxBanDuration     time.Duration `mapstructure:"max-ban-duration" reload:"true"`
+}
+
+type NotificationConfig struct {
+	Enabled        bool                     `mapstructure:"enabled" reload:"true"`
+	DeliveryMethod string                   `mapstructure:"delivery-method" reload:"true"`
+	DefaultRetry   int                      `mapstructure:"default-retry" reload:"true"`
+	RetryDelay     time.Duration            `mapstructure:"retry-delay" reload:"true"`
+	Timeout        time.Duration            `mapstructure:"timeout" reload:"true"`
+	HTTP           *HTTPNotificationConfig  `mapstructure:"http" reload:"true"`
+	Kafka          *KafkaNotificationConfig `mapstructure:"kafka" reload:"true"`
+}
+
+type HTTPNotificationConfig struct {
+	URL          string `mapstructure:"url" reload:"true"`
+	Endpoint     string `mapstructure:"endpoint" reload:"true"`
+	APIKey       string `mapstructure:"api-key" reload:"true"`
+	HashedAPIKey string `mapstructure"-"`
+}
+
+type KafkaNotificationConfig struct {
+	Brokers []string `mapstructure:"brokers" reload:"true"`
+	Topic   string   `mapstructure:"topic" reload:"true"`
+	GroupID string   `mapstructure:"group_id" reload:"true"`
 }
 
 func (cfg *Config) Validate() error {

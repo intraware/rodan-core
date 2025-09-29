@@ -11,6 +11,7 @@ import (
 	"github.com/intraware/rodan/api/leaderboard"
 	"github.com/intraware/rodan/api/shared"
 	"github.com/intraware/rodan/internal/models"
+	"github.com/intraware/rodan/internal/notification"
 	"github.com/intraware/rodan/internal/sandbox"
 	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
@@ -73,7 +74,7 @@ func GetChallengeList(ctx *gin.Context) {
 // @Router       /challenges/{id} [get]
 func GetChallengeDetail(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	userID := ctx.GetInt("user_id")
+	userID := ctx.GetUint("user_id")
 	var user models.User
 	user, userCacheHit := shared.UserCache.Get(userID)
 	if !userCacheHit {
@@ -93,7 +94,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 		shared.UserCache.Set(userID, user)
 	}
 	challengeIDStr := ctx.Param("id")
-	challengeID, err := strconv.Atoi(challengeIDStr)
+	id, err := strconv.ParseUint(challengeIDStr, 10, 64)
 	if err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":     "get_challenge_detail",
@@ -107,6 +108,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid challenge ID"})
 		return
 	}
+	challengeID := uint(id)
 	if user.TeamID == nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":    "get_challenge_detail",
@@ -214,7 +216,7 @@ func GetChallengeDetail(ctx *gin.Context) {
 // @Router       /challenges/{id}/config [get]
 func GetChallengeConfig(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	userID := ctx.GetInt("user_id")
+	userID := ctx.GetUint("user_id")
 	user, userCacheHit := shared.UserCache.Get(userID)
 	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
@@ -233,7 +235,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 		shared.UserCache.Set(userID, user)
 	}
 	challengeIDStr := ctx.Param("id")
-	challengeID, err := strconv.Atoi(challengeIDStr)
+	id, err := strconv.ParseUint(challengeIDStr, 10, 64)
 	if err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":     "get_challenge_config",
@@ -246,6 +248,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid challenge ID"})
 		return
 	}
+	challengeID := uint(id)
 	if user.TeamID == nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":    "get_challenge_config",
@@ -278,7 +281,6 @@ func GetChallengeConfig(ctx *gin.Context) {
 			}).Warn("Error checking solve status")
 		}
 	}
-
 	challenge, challengeCacheHit := shared.ChallengeCache.Get(challengeID)
 	if !challengeCacheHit {
 		if err := models.DB.Where("is_visible = ?", true).First(&challenge, challengeID).Error; err != nil {
@@ -455,9 +457,10 @@ func GetChallengeConfig(ctx *gin.Context) {
 // @Failure      500   {object}  types.ErrorResponse
 // @Router       /challenges/{id}/submit [post]
 func SubmitFlag(ctx *gin.Context) {
+	cfg := values.GetConfig().App
 	auditLog := utils.Logger.WithField("type", "audit")
 	challengeIDStr := ctx.Param("id")
-	challengeID, err := strconv.Atoi(challengeIDStr)
+	id, err := strconv.ParseUint(challengeIDStr, 10, 64)
 	if err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":     "submit_flag",
@@ -469,6 +472,7 @@ func SubmitFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid challenge ID"})
 		return
 	}
+	challengeID := uint(id)
 	var req submitFlagRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		auditLog.WithFields(logrus.Fields{
@@ -481,8 +485,7 @@ func SubmitFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Failed to parse the body"})
 		return
 	}
-	userID := ctx.GetInt("user_id")
-
+	userID := ctx.GetUint("user_id")
 	user, userCacheHit := shared.UserCache.Get(userID)
 	if !userCacheHit {
 		if err := models.DB.First(&user, userID).Error; err != nil {
@@ -607,15 +610,15 @@ func SubmitFlag(ctx *gin.Context) {
 		}
 		return true
 	})
-	if len(flagValues) > 0 && (values.GetConfig().App.Ban.UserBan || values.GetConfig().App.Ban.TeamBan) {
+	if len(flagValues) > 0 && (cfg.Ban.UserBan || cfg.Ban.TeamBan) {
 		banReason := "submit_someone_flag"
 		tx := models.DB.Begin()
 		var count int64
-		if values.GetConfig().App.Ban.UserBan {
+		if cfg.Ban.UserBan {
 			tx.Model(&models.BanHistory{}).
 				Where("user_id = ?", user.ID).
 				Count(&count)
-		} else if values.GetConfig().App.Ban.TeamBan {
+		} else if cfg.Ban.TeamBan {
 			tx.Model(&models.BanHistory{}).
 				Where("team_id = ?", user.TeamID).
 				Count(&count)
@@ -629,7 +632,7 @@ func SubmitFlag(ctx *gin.Context) {
 		var ban models.BanHistory
 		ban.Context = banReason
 		ban.ExpiresAt = expiration
-		if values.GetConfig().App.Ban.UserBan {
+		if cfg.Ban.UserBan {
 			key = fmt.Sprintf("%d:%d", user.ID, *user.TeamID)
 			user.Ban = true
 			if err := tx.Save(&user).Error; err != nil {
@@ -649,7 +652,7 @@ func SubmitFlag(ctx *gin.Context) {
 			}
 			ban.UserID = &userID
 		}
-		if values.GetConfig().App.Ban.TeamBan {
+		if cfg.Ban.TeamBan {
 			key = fmt.Sprintf(":%d", teamID)
 			if err := tx.Model(&models.Team{}).Where("id = ?", *user.TeamID).Update("ban", true).Error; err != nil {
 				tx.Rollback()
@@ -685,7 +688,20 @@ func SubmitFlag(ctx *gin.Context) {
 			return
 		} else {
 			shared.BanHistoryCache.Set(key, ban)
-			var sandboxes []sandbox.SandBox // TODO: tomorrow
+			var sandboxes []*sandbox.SandBox
+			if cfg.Ban.UserBan {
+				for _, sandbox := range shared.SandBoxMap {
+					if sandbox.UserID == *ban.UserID {
+						sandboxes = append(sandboxes, sandbox)
+					}
+				}
+			} else if cfg.Ban.TeamBan {
+				for _, sandbox := range shared.SandBoxMap {
+					if sandbox.TeamID == *ban.TeamID {
+						sandboxes = append(sandboxes, sandbox)
+					}
+				}
+			}
 			stopAllContainers(sandboxes)
 		}
 		if err := tx.Commit().Error; err != nil {
@@ -744,6 +760,9 @@ func SubmitFlag(ctx *gin.Context) {
 		"ip":             ctx.ClientIP(),
 		"solved_at":      solve.CreatedAt,
 	}).Info("Flag submitted successfully")
+	if values.GetConfig().App.Notification.Enabled {
+		notification.SendNotification("Congratulations!!!")
+	}
 	leaderboard.MarkLeaderboardDirty()
 	ctx.JSON(http.StatusOK, submitFlagResponse{
 		Correct: true,

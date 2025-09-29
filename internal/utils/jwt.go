@@ -9,13 +9,13 @@ import (
 )
 
 type Claims struct {
-	UserID   int    `json:"user_id"`
+	UserID   uint   `json:"user_id"`
 	Username string `json:"username"`
-	TeamID   int    `json:"team_id"`
+	TeamID   uint   `json:"team_id"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(teamID, userID int, username string, secret string) (string, error) {
+func GenerateJWT(teamID, userID uint, username string, secret string) (string, error) {
 	claims := &Claims{
 		UserID:   userID,
 		TeamID:   teamID,

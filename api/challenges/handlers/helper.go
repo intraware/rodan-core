@@ -65,13 +65,12 @@ func getUserCount() int {
 	return int(count)
 }
 
-func getSolveCount(challengeID int) int {
+func getSolveCount(challengeID uint) int {
 	now := time.Now()
 	val, _ := challengeStats.LoadOrStore(challengeID, &challengeSolveStat{})
 	stat := val.(*challengeSolveStat)
 	userBlackList := shared.UserBlackList
 	teamBlackList := shared.TeamBlackList
-
 	last := time.Unix(0, stat.LastUpdateUnix.Load())
 	backoff := time.Duration(stat.Backoff.Load())
 	if backoff == 0 {
@@ -100,7 +99,7 @@ func getSolveCount(challengeID int) int {
 	return int(count)
 }
 
-func calcPoints(minPoints, maxPoints, challengeID int) (int, error) {
+func calcPoints(minPoints, maxPoints int, challengeID uint) (int, error) {
 	solves := getSolveCount(challengeID)
 	users := getUserCount()
 	score := smoothScore(solves, maxPoints, minPoints, users, 3, 2.25)
@@ -130,7 +129,7 @@ func smoothScore(solves int, maxPoints int, minPoints int, total int, offset int
 
 var dynFlagMap sync.Map
 
-func getDynamicFlag(challengeID, teamID int) string {
+func getDynamicFlag(challengeID, teamID uint) string {
 	key := fmt.Sprintf("%d:%d", challengeID, teamID)
 	if val, ok := dynFlagMap.Load(key); ok {
 		return val.(string)
@@ -140,7 +139,7 @@ func getDynamicFlag(challengeID, teamID int) string {
 	return flag
 }
 
-func generateHashedFlag(challengeID, teamID int) string {
+func generateHashedFlag(challengeID, teamID uint) string {
 	cfg := values.GetConfig()
 	input := fmt.Sprintf("%d%s%d", teamID, cfg.Server.Security.FlagSecret, challengeID)
 	hash := sha256.Sum256([]byte(input))
@@ -161,7 +160,13 @@ func calcBanDuration(strikes int) time.Duration {
 	return duration
 }
 
-func stopAllContainers(ban_sandbox []sandbox.SandBox) (err error) {
+func stopAllContainers(banSandbox []*sandbox.SandBox) (err error) {
 	err = nil
+	for _, sandbox := range banSandbox {
+		err = sandbox.Stop()
+		if err != nil {
+			return
+		}
+	}
 	return
 }

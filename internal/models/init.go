@@ -36,8 +36,8 @@ func InitDB(cfg *config.Config) {
 		logLevel = logger.Silent
 	}
 	var err error
-	maxRetries := 5
-	for i := 0; i < maxRetries; i++ {
+	maxRetries := cfg.Database.MaxTries
+	for i := range maxRetries {
 		DB, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{
 			TranslateError: true,
 			Logger:         logger.Default.LogMode(logLevel),
@@ -54,7 +54,7 @@ func InitDB(cfg *config.Config) {
 	if err != nil {
 		logrus.Fatalf("Failed to connect to database after %d attempts: %v", maxRetries, err)
 	}
-	if err := DB.AutoMigrate(&User{}, &Team{}, &Challenge{}, &Container{}, &Solve{}, &BanHistory{}); err != nil {
+	if err := DB.AutoMigrate(&Challenge{}, &Container{}, &Solve{}); err != nil {
 		logrus.Fatalf("Failed to migrate database: %v", err)
 	}
 	logrus.Println("Database initialized successfully")

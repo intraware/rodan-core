@@ -4,7 +4,7 @@ import (
 	"github.com/intraware/rodan/internal/sandbox"
 )
 
-var SandBoxMap map[int]*sandbox.SandBox = make(map[int]*sandbox.SandBox)
+var SandBoxMap map[uint]*sandbox.SandBox = make(map[uint]*sandbox.SandBox)
 
-var UserBlackList []int
-var TeamBlackList []int
+var UserBlackList []uint
+var TeamBlackList []uint

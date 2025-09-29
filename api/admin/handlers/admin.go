@@ -1,3 +1,4 @@
+// TODO: admin is vibe coded and I can't fix it now
 package handlers
 
 import (
@@ -197,7 +198,6 @@ func FlushCache(ctx *gin.Context) {
 		shared.UserCache.Reset()
 		shared.TeamCache.Reset()
 		shared.ChallengeCache.Reset()
-		shared.LoginCache.Reset()
 		shared.StaticConfig.Reset()
 		shared.TeamSolvedCache.Reset()
 		auditLog.WithFields(logrus.Fields{
@@ -238,7 +238,7 @@ func FlushCache(ctx *gin.Context) {
 		}).Info("Challenge cache flushed successfully")
 		ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Challenge cache flushed successfully"})
 	case "login":
-		shared.LoginCache.Reset()
+		// TODO: integrate with rodan-authify
 		auditLog.WithFields(logrus.Fields{
 			"event":  "flush_cache",
 			"status": "success",
@@ -265,7 +265,7 @@ func FlushCache(ctx *gin.Context) {
 		}).Info("Team solved cache flushed successfully")
 		ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Team solved cache flushed successfully"})
 	case "reset_password":
-		shared.ResetPasswordCache.Reset()
+		// TODO: integrate with rodan-authify
 		auditLog.WithFields(logrus.Fields{
 			"event":  "flush_cache",
 			"status": "success",

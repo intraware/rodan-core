@@ -1,3 +1,4 @@
+// TODO: admin is vibe coded and I can't fix it now
 package admin
 
 import (

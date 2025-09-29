@@ -40,7 +40,6 @@ HackVault aims to be a highly efficient backend for CTF (Capture The Flag) platf
 - [ ] add a query and response summary for all endpoints, some kind of swagger docs or just a routes.md
 - [ ] implement leaderboard sort from backend
 - [x] implement cache
-- [ ] add forgot password for user
 - [ ] change the code change for team logic
 - [ ] add the points function (dynamic)
 - [ ] implement notifications (SSE)

@@ -17,8 +17,8 @@ import (
 )
 
 func Run() {
-	config_file := os.Getenv("CONFIG_FILE")
-	if err := values.InitWithViper(config_file); err != nil {
+	configFile := os.Getenv("CONFIG_FILE")
+	if err := values.InitWithViper(configFile); err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 	cfg := values.GetConfig()

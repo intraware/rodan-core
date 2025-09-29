@@ -8,16 +8,16 @@ import (
 
 type pool struct {
 	mu   sync.RWMutex
-	pool map[int][]*container
+	pool map[uint][]*container
 }
 
 func newPool() *pool {
 	return &pool{
-		pool: make(map[int][]*container),
+		pool: make(map[uint][]*container),
 	}
 }
 
-func (p *pool) Aquire(challengeID int) (*container, error) {
+func (p *pool) Aquire(challengeID uint) (*container, error) {
 	var ctr *container
 	p.mu.Lock()
 	defer p.mu.Unlock()

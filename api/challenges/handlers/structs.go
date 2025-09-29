@@ -1,12 +1,12 @@
 package handlers
 
 type challengeItem struct {
-	ID    int    `json:"id"`
+	ID    uint   `json:"id"`
 	Title string `json:"title"`
 }
 
 type challengeDetail struct {
-	ID         int    `json:"id"`
+	ID         uint   `json:"id"`
 	Name       string `json:"name"`
 	Author     string `json:"author"`
 	Desc       string `json:"desc"`
@@ -26,7 +26,7 @@ type submitFlagResponse struct {
 }
 
 type challengeConfigResponse struct {
-	ID       int      `json:"id"`
+	ID       uint     `json:"id"`
 	Links    []string `json:"links,omitempty"`
 	Ports    []int    `json:"ports,omitempty"`
 	TimeLeft int64    `json:"timeleft,omitempty"`

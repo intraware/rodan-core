@@ -12,12 +12,12 @@ type container struct {
 	Context     context.Context
 	ContainerID string
 	ImageName   string
-	ChallengeID int
+	ChallengeID uint
 	TTL         time.Duration
 	StartedAt   time.Time
 }
 
-func newContainer(ctx context.Context, challengeID int, containerName, imageName string, ttl time.Duration, exposedPorts []string) (*container, error) {
+func newContainer(ctx context.Context, challengeID uint, containerName, imageName string, ttl time.Duration, exposedPorts []string) (*container, error) {
 	if !docker.ImageExists(ctx, imageName) {
 		return nil, errImageNotExists
 	}

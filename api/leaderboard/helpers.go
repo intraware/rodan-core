@@ -15,13 +15,13 @@ import (
 )
 
 type UserPoints struct {
-	UserID   int
+	UserID   uint
 	UserName string
 	Points   float64
 }
 
 type TeamPoints struct {
-	TeamID   int
+	TeamID   uint
 	TeamName string
 	Points   float64
 }
@@ -93,17 +93,16 @@ func updateLeaderboards() {
 		log.Println("[leaderboard] DB error:", err)
 		return
 	}
-	challengeSolves := make(map[int][]models.Solve)
-	solveTimes := make(map[int][]time.Time)
+	challengeSolves := make(map[uint][]models.Solve)
+	solveTimes := make(map[uint][]time.Time)
 	for _, s := range solves {
 		challengeSolves[s.ChallengeID] = append(challengeSolves[s.ChallengeID], s)
 		solveTimes[s.ChallengeID] = append(solveTimes[s.ChallengeID], s.CreatedAt)
 	}
-	userScores := make(map[int]float64)
-	userToTeam := make(map[int]int)
-
-	challengeToMeta := make(map[int]models.Challenge)
-	var missingChallengeIDs []int
+	userScores := make(map[uint]float64)
+	userToTeam := make(map[uint]uint)
+	challengeToMeta := make(map[uint]models.Challenge)
+	var missingChallengeIDs []uint
 	for cid := range challengeSolves {
 		if val, ok := shared.ChallengeCache.Get(cid); ok {
 			challenge := val
@@ -139,8 +138,8 @@ func updateLeaderboards() {
 			userToTeam[s.UserID] = s.TeamID
 		}
 	}
-	userToName := make(map[int]string)
-	var missingIDs []int
+	userToName := make(map[uint]string)
+	var missingIDs []uint
 	for uid := range userScores {
 		if val, ok := shared.UserCache.Get(uid); ok {
 			user := val
@@ -170,16 +169,15 @@ func updateLeaderboards() {
 		return userLeaderboard[i].Points > userLeaderboard[j].Points
 	})
 	userLeaderboardCache.Store(&userLeaderboard)
-
-	teamScores := make(map[int]float64)
-	teamIDSet := make(map[int]struct{})
+	teamScores := make(map[uint]float64)
+	teamIDSet := make(map[uint]struct{})
 	for uid, pts := range userScores {
 		tid := userToTeam[uid]
 		teamScores[tid] += pts
 		teamIDSet[tid] = struct{}{}
 	}
-	teamToName := make(map[int]string)
-	var missingTeamIDs []int
+	teamToName := make(map[uint]string)
+	var missingTeamIDs []uint
 	for tid := range teamIDSet {
 		if val, ok := shared.TeamCache.Get(tid); ok {
 			team := val
