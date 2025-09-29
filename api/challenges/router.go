@@ -22,7 +22,7 @@ func LoadChallenges(r *gin.RouterGroup) {
 	protectedRouter.POST("/:id/regenerate", handlers.RegenerateDynamicChallenge)
 
 	// Hint routes (all protected) TODO: have to implement this
-	hintRouter := challengeRouter.Group("/:challenge_id/hint", middleware.AuthRequired)
+	hintRouter := protectedRouter.Group("/:id/hint", middleware.AuthRequired)
 	hintRouter.GET("/list", middleware.CacheMiddleware, handlers.ListHints)
 	hintRouter.GET("/:hint_id", handlers.GetHint)
 	hintRouter.POST("/:hint_id/buy", handlers.BuyHint)
