@@ -28,7 +28,7 @@ var redisObj RedisClient
 func InitRedis(ctx context.Context) {
 	cacheCfg := values.GetConfig().App.AppCache
 	ring := redis.NewRing(&redis.RingOptions{
-		Addrs: map[string]string{"redis-server": cfg.ServiceUrl},
+		Addrs: map[string]string{"redis-server": cacheCfg.ServiceUrl},
 	})
 	redisCache := redis_cache.New(&redis_cache.Options{
 		Redis:      ring,
