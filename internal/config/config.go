@@ -66,6 +66,7 @@ type CacheConfig struct {
 	ServiceType           string        `mapstructure:"service-type"`
 	InternalCacheSize     int           `mapstructure:"internal-cache-size"`
 	InternalCacheDuration time.Duration `mapstructure:"internal-cache-duration"`
+	SkipLocalCache        bool          `mapstructure:"skip-internal-cache"`
 }
 
 type LeaderboardConfig struct {

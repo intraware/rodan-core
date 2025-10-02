@@ -53,6 +53,7 @@ service-url = "redis://cache:6379"
 service-type = "redis"
 internal-cache-size = 1000 # (skip mentioning this if you are using in-app cache)
 internal-cache-duration = "1m" # (skip mentioning this if you are using in-app cache)
+skip-internal-cache = true
 
 [app.notifications]
 enabled = true

@@ -18,6 +18,7 @@ type CacheOpts struct {
 	TimeToLive    time.Duration
 	CleanInterval *time.Duration
 	Revaluate     *bool
+	Prefix        string
 }
 
 var cfg *config.CacheConfig = nil

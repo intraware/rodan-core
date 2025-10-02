@@ -2,8 +2,6 @@ package cache
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 
 	"github.com/intraware/rodan/internal/utils/values"
@@ -30,9 +28,15 @@ func InitRedis(ctx context.Context) {
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{"redis-server": cacheCfg.ServiceUrl},
 	})
+	internalCache := func() *redis_cache.TinyLFU {
+		if cacheCfg.SkipLocalCache {
+			return nil
+		}
+		return redis_cache.NewTinyLFU(cacheCfg.InternalCacheSize, cacheCfg.InternalCacheDuration)
+	}
 	redisCache := redis_cache.New(&redis_cache.Options{
 		Redis:      ring,
-		LocalCache: redis_cache.NewTinyLFU(cacheCfg.InternalCacheSize, cacheCfg.InternalCacheDuration),
+		LocalCache: internalCache(),
 	})
 	redisTemp := RedisClient{
 		redis: redisCache,
@@ -42,24 +46,23 @@ func InitRedis(ctx context.Context) {
 }
 
 func newRedisCache[K comparable, V any](opts *CacheOpts) Cache[K, V] {
-	var prefixRandom string
-	var versionInt int
-	b := make([]byte, 5)
-	if _, err := rand.Read(b); err != nil {
-		prefixRandom = "prefix_fallback"
+	var prefix string
+	var version int
+	if opts != nil && opts.Prefix != "" {
+		prefix = opts.Prefix
 	} else {
-		prefixRandom = "prefix_" + hex.EncodeToString(b)
+		prefix = "cache"
 	}
 	if opts.TimeToLive.Seconds() == 0 {
-		versionInt = 0
+		version = 0
 	} else {
-		versionInt = 1
+		version = 1
 	}
 	return &redisCache[K, V]{
 		opts:    opts,
 		client:  redisObj,
-		prefix:  prefixRandom,
-		version: versionInt,
+		prefix:  prefix,
+		version: version,
 	}
 }
 
@@ -88,11 +91,9 @@ func (r *redisCache[K, V]) Delete(key K) {
 
 func (r *redisCache[K, V]) Reset() { // TODO: change the function to handle the errror
 	if r.opts.TimeToLive.Seconds() == 0 {
-		r.version += 1
-		return
+		r.version++
 	} else {
 		prefixString := fmt.Sprintf("%s_", r.prefix)
 		r.client.redis.DeletePrefix(r.client.ctx, prefixString)
-		return
 	}
 }
