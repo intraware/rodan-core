@@ -1,4 +1,3 @@
-// TODO: admin is vibe coded and I can't fix it now
 package admin
 
 import (
@@ -10,54 +9,54 @@ import (
 func LoadUser(r *gin.RouterGroup) {
 	adminRouter := r.Group("/admin", middleware.AuthRequired)
 
-	// Admin management routes
+	// Admin management
 	adminRouter.GET("/me", handlers.GetAdmin)
-	adminRouter.POST("/add", handlers.AddAdmin)
-	adminRouter.PATCH("/edit", handlers.UpdateAdmin)
-	adminRouter.DELETE("/delete", handlers.DeleteAdmin)
+	adminRouter.POST("/", handlers.AddAdmin)
+	adminRouter.PATCH("/:id", handlers.UpdateAdmin)
+	adminRouter.DELETE("/:id", handlers.DeleteAdmin)
 
-	adminRouter.POST("/flush_cache", handlers.FlushCache)
-	adminRouter.POST("/close_submission", handlers.CloseChallengeSubmission)
-	adminRouter.POST("/open_submission", handlers.OpenChallengeSubmission)
-	adminRouter.POST("/close_login", handlers.CloseLogin)
-	adminRouter.POST("/open_login", handlers.OpenLogin)
+	// System controls
+	adminRouter.POST("/cache/flush", handlers.FlushCache)
+	adminRouter.POST("/submissions/close", handlers.CloseChallengeSubmission)
+	adminRouter.POST("/submissions/open", handlers.OpenChallengeSubmission)
+	adminRouter.POST("/auth/login/close", handlers.CloseLogin)
+	adminRouter.POST("/auth/login/open", handlers.OpenLogin)
 
-	// Challenge related routes
-	challengeRouter := adminRouter.Group("/challenge")
-	challengeRouter.GET("/all", handlers.GetAllChallenges)
-	challengeRouter.POST("/add", handlers.AddChallenge)
-	challengeRouter.PATCH("/edit", handlers.UpdateChallenge)
-	challengeRouter.DELETE("/delete", handlers.DeleteChallenge)
+	// Challenge management
+	challengeRouter := adminRouter.Group("/challenges")
+	challengeRouter.GET("/", handlers.GetAllChallenges)
+	challengeRouter.POST("/", handlers.AddChallenge)
+	challengeRouter.PATCH("/:id", handlers.UpdateChallenge)
+	challengeRouter.DELETE("/:id", handlers.DeleteChallenge)
 
-	// User management routes
-	userRouter := adminRouter.Group("/user")
-	userRouter.GET("/all", handlers.GetAllUsers)
-	userRouter.PATCH("/edit", handlers.UpdateUser)
-	userRouter.DELETE("/delete", handlers.DeleteUser)
-	userRouter.POST("/ban", handlers.BanUser)
-	userRouter.POST("/unban", handlers.UnbanUser)
-	userRouter.POST("/blacklist", handlers.BlacklistUser)
-	userRouter.POST("/unblacklist", handlers.UnblacklistUser)
-	// userRouter.POST("/reset-password", resetUserPassword) --> temp
-	userRouter.POST("/remove_from_team", handlers.RemoveUserFromTeam)
-	userRouter.POST("/add_to_team", handlers.AddUserToTeam)
+	// User management
+	userRouter := adminRouter.Group("/users")
+	userRouter.GET("/", handlers.GetAllUsers)
+	userRouter.PATCH("/:id", handlers.UpdateUser)
+	userRouter.DELETE("/:id", handlers.DeleteUser)
+	userRouter.POST("/:id/ban", handlers.BanUser)
+	userRouter.POST("/:id/unban", handlers.UnbanUser)
+	userRouter.POST("/:id/blacklist", handlers.BlacklistUser)
+	userRouter.POST("/:id/unblacklist", handlers.UnblacklistUser)
+	userRouter.POST("/:id/remove-from-team", handlers.RemoveUserFromTeam)
+	userRouter.POST("/:id/add-to-team", handlers.AddUserToTeam)
 
-	// Team management routes
-	teamRouter := adminRouter.Group("/team")
-	teamRouter.GET("/all", handlers.GetAllTeams)
-	teamRouter.PATCH("/edit", handlers.UpdateTeam)
-	teamRouter.DELETE("/delete", handlers.DeleteTeam)
-	teamRouter.POST("/ban", handlers.BanTeam)
-	teamRouter.POST("/unban", handlers.UnbanTeam)
-	teamRouter.POST("/blacklist", handlers.BlacklistTeam)
-	teamRouter.POST("/unblacklist", handlers.UnblacklistTeam)
+	// Team management
+	teamRouter := adminRouter.Group("/teams")
+	teamRouter.GET("/", handlers.GetAllTeams)
+	teamRouter.PATCH("/:id", handlers.UpdateTeam)
+	teamRouter.DELETE("/:id", handlers.DeleteTeam)
+	teamRouter.POST("/:id/ban", handlers.BanTeam)
+	teamRouter.POST("/:id/unban", handlers.UnbanTeam)
+	teamRouter.POST("/:id/blacklist", handlers.BlacklistTeam)
+	teamRouter.POST("/:id/unblacklist", handlers.UnblacklistTeam)
 
-	// Container management routes
-	containerRouter := adminRouter.Group("/container")
-	containerRouter.GET("/all", handlers.GetAllContainers)
-	containerRouter.DELETE("/stop", handlers.StopContainer)
-	containerRouter.DELETE("/stop_team", handlers.StopTeamContainer)
-	containerRouter.DELETE("/stop_challenge", handlers.StopChallengeContainer)
-	containerRouter.DELETE("/stop_all", handlers.StopAllContainers)
-	containerRouter.POST("/kill_all", handlers.KillAllContainers)
+	// Container management
+	containerRouter := adminRouter.Group("/containers")
+	containerRouter.GET("/", handlers.GetAllContainers)
+	containerRouter.DELETE("/:id/stop", handlers.StopContainer)
+	containerRouter.DELETE("/teams/:id/stop", handlers.StopTeamContainer)
+	containerRouter.DELETE("/challenges/:id/stop", handlers.StopChallengeContainer)
+	containerRouter.DELETE("/stop-all", handlers.StopAllContainers)
+	containerRouter.POST("/kill-all", handlers.KillAllContainers)
 }

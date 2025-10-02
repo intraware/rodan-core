@@ -405,3 +405,4 @@ func AddUserToTeam(ctx *gin.Context) {
 	}).Info("User added to team successfully")
 	ctx.JSON(http.StatusOK, gin.H{"message": "User added to team successfully"})
 }
+

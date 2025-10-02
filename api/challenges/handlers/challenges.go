@@ -727,11 +727,36 @@ func SubmitFlag(ctx *gin.Context) {
 			ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Team account got banned"})
 		}
 	}
+	var solveCount int64
+	if err := models.DB.Model(&models.Solve{}).
+		Where("challenge_id = ?", challengeID).
+		Count(&solveCount).Error; err != nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":     "submit_flag",
+			"status":    "failure",
+			"reason":    "db_error_count",
+			"user_id":   user.ID,
+			"team_id":   teamID,
+			"challenge": challengeID,
+			"ip":        ctx.ClientIP(),
+			"error":     err.Error(),
+		}).Error("Failed to count challenge solves")
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to record solve"})
+		return
+	}
+	bloodCount := func() uint {
+		if solveCount < 3 {
+			return uint(solveCount + 1)
+		} else {
+			return 0
+		}
+	}()
 	solve := models.Solve{
 		TeamID:        teamID,
 		ChallengeID:   challengeID,
 		UserID:        userID,
 		ChallengeType: challengeType,
+		BloodCount:    bloodCount,
 	}
 	if err := models.DB.Create(&solve).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
@@ -747,6 +772,18 @@ func SubmitFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to record solve"})
 		return
 	}
+	if bloodCount > 0 && bloodCount <= 3 {
+		auditLog.WithFields(logrus.Fields{
+			"event":     "blood",
+			"user_id":   user.ID,
+			"team_id":   teamID,
+			"challenge": challengeID,
+			"blood":     bloodCount,
+		}).Infof("Team got %d-blood on challenge", bloodCount)
+		if bloodCount == 1 {
+			notification.SendNotification(fmt.Sprintf("First Blood! %s solved %s", user.Username, challenge.Name))
+		}
+	}
 	auditLog.WithFields(logrus.Fields{
 		"event":          "submit_flag",
 		"status":         "success",
@@ -760,9 +797,6 @@ func SubmitFlag(ctx *gin.Context) {
 		"ip":             ctx.ClientIP(),
 		"solved_at":      solve.CreatedAt,
 	}).Info("Flag submitted successfully")
-	if values.GetConfig().App.Notification.Enabled {
-		notification.SendNotification("Congratulations!!!")
-	}
 	leaderboard.MarkLeaderboardDirty()
 	ctx.JSON(http.StatusOK, submitFlagResponse{
 		Correct: true,
