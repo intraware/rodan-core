@@ -88,7 +88,14 @@ func updateLeaderboards() {
 	var solves []models.Solve
 	userBlackList := shared.UserBlackList
 	teamBlackList := shared.TeamBlackList
-	err := models.DB.Where("user_id NOT IN ? AND team_id NOT IN ?", userBlackList, teamBlackList).Order("challenge_id, created_at").Find(&solves).Error
+	query := models.DB
+	if len(userBlackList) > 0 {
+		query = query.Where("user_id NOT IN (?)", userBlackList)
+	}
+	if len(teamBlackList) > 0 {
+		query = query.Where("team_id NOT IN (?)", teamBlackList)
+	}
+	err := query.Where("blacklist != TRUE").Order("challenge_id, created_at").Find(&solves).Error
 	if err != nil {
 		log.Println("[leaderboard] DB error:", err)
 		return
@@ -113,7 +120,7 @@ func updateLeaderboards() {
 	}
 	if len(missingChallengeIDs) > 0 {
 		var challenges []models.Challenge
-		if err := models.DB.Where("id IN ?", missingChallengeIDs).Find(&challenges).Error; err == nil {
+		if err := models.DB.Where("id IN (?) AND blacklist != TRUE", missingChallengeIDs).Find(&challenges).Error; err == nil {
 			for _, ch := range challenges {
 				shared.ChallengeCache.Set(ch.ID, ch)
 				challengeToMeta[ch.ID] = ch
@@ -149,8 +156,16 @@ func updateLeaderboards() {
 		}
 	}
 	if len(missingIDs) > 0 {
+		query := models.DB.Where("id IN (?)", missingIDs)
+		if len(userBlackList) > 0 {
+			query = query.Where("id NOT IN (?)", userBlackList)
+		}
+		if len(teamBlackList) > 0 {
+			query = query.Where("team_id NOT IN (?)", teamBlackList)
+		}
+		query = query.Where("blacklist != TRUE")
 		var users []models.User
-		if err := models.DB.Where("id IN ? AND id NOT IN ? AND team_id NOT IN ?", missingIDs, userBlackList, teamBlackList).Find(&users).Error; err == nil {
+		if err := query.Find(&users).Error; err == nil {
 			for _, u := range users {
 				shared.UserCache.Set(u.ID, u)
 				userToName[u.ID] = u.Username
@@ -188,7 +203,7 @@ func updateLeaderboards() {
 	}
 	if len(missingTeamIDs) > 0 {
 		var teams []models.Team
-		if err := models.DB.Where("id IN ? AND id NOT in ?", missingTeamIDs, teamBlackList).Find(&teams).Error; err == nil {
+		if err := models.DB.Where("id IN (?) AND id NOT in (?) AND blacklist != TRUE", missingTeamIDs, teamBlackList).Find(&teams).Error; err == nil {
 			for _, t := range teams {
 				shared.TeamCache.Set(t.ID, t)
 				teamToName[t.ID] = t.Name

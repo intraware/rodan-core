@@ -10,6 +10,24 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func ToChallengeResponse(c models.Challenge) ChallengeResponse {
+	return ChallengeResponse{
+		ID:            c.ID,
+		Name:          c.Name,
+		Author:        c.Author,
+		Desc:          c.Desc,
+		Category:      c.Category,
+		PointsMin:     c.PointsMin,
+		PointsMax:     c.PointsMax,
+		Difficulty:    c.Difficulty,
+		IsStatic:      c.IsStatic,
+		IsVisible:     c.IsVisible,
+		StaticConfig:  c.StaticConfig,
+		DynamicConfig: c.DynamicConfig,
+		Hints:         c.Hints,
+	}
+}
+
 // GetAllChallenges godoc
 // @Summary      Get all challenges
 // @Description  Retrieves a list of all challenges from the database
@@ -17,14 +35,13 @@ import (
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  []models.Challenge
+// @Success      200  {array}   ChallengeResponse
 // @Failure      500  {object}  types.ErrorResponse
-// @Router       /admin/challenge/all [get]
+// @Router       /admin/challenges [get]
 func GetAllChallenges(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	var challenges []models.Challenge
-
-	if err := models.DB.Find(&challenges).Error; err != nil {
+	if err := models.DB.Preload("Hints").Preload("StaticConfig").Preload("DynamicConfig").Find(&challenges).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "get_all_challenges",
 			"status": "failure",
@@ -34,14 +51,17 @@ func GetAllChallenges(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
+	var resp []ChallengeResponse
+	for _, c := range challenges {
+		resp = append(resp, ToChallengeResponse(c))
+	}
 	auditLog.WithFields(logrus.Fields{
 		"event":  "get_all_challenges",
 		"status": "success",
-		"count":  len(challenges),
+		"count":  len(resp),
 		"ip":     ctx.ClientIP(),
 	}).Info("Retrieved all challenges successfully")
-	ctx.JSON(http.StatusOK, challenges)
+	ctx.JSON(http.StatusOK, resp)
 }
 
 // AddChallenge godoc
@@ -51,16 +71,15 @@ func GetAllChallenges(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        challenge  body      models.Challenge  true  "Challenge object"
-// @Success      200        {object}  models.Challenge
+// @Param        challenge  body      ChallengeResponse  true  "Challenge object"
+// @Success      200        {object}  ChallengeResponse
 // @Failure      400        {object}  types.ErrorResponse
 // @Failure      500        {object}  types.ErrorResponse
-// @Router       /admin/challenge/add [post]
+// @Router       /admin/challenges [post]
 func AddChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	var challenge models.Challenge
-
-	if err := ctx.ShouldBindJSON(&challenge); err != nil {
+	var req ChallengeResponse
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "add_challenge",
 			"status": "failure",
@@ -70,7 +89,20 @@ func AddChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
-
+	challenge := models.Challenge{
+		Name:          req.Name,
+		Author:        req.Author,
+		Desc:          req.Desc,
+		Category:      req.Category,
+		PointsMin:     req.PointsMin,
+		PointsMax:     req.PointsMax,
+		Difficulty:    req.Difficulty,
+		IsStatic:      req.IsStatic,
+		IsVisible:     req.IsVisible,
+		StaticConfig:  req.StaticConfig,
+		DynamicConfig: req.DynamicConfig,
+		Hints:         req.Hints,
+	}
 	if err := models.DB.Create(&challenge).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "add_challenge",
@@ -81,14 +113,13 @@ func AddChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":        "add_challenge",
 		"status":       "success",
 		"challenge_id": challenge.ID,
 		"ip":           ctx.ClientIP(),
 	}).Info("Challenge added successfully")
-	ctx.JSON(http.StatusOK, challenge)
+	ctx.JSON(http.StatusOK, ToChallengeResponse(challenge))
 }
 
 // UpdateChallenge godoc
@@ -98,16 +129,17 @@ func AddChallenge(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        challenge  body      models.Challenge  true  "Challenge object"
-// @Success      200        {object}  models.Challenge
+// @Param        id         path      int                true  "Challenge ID"
+// @Param        challenge  body      ChallengeResponse  true  "Challenge object"
+// @Success      200        {object}  ChallengeResponse
 // @Failure      400        {object}  types.ErrorResponse
 // @Failure      500        {object}  types.ErrorResponse
-// @Router       /admin/challenge/edit [patch]
+// @Router       /admin/challenges/{id} [patch]
 func UpdateChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	var challenge models.Challenge
-
-	if err := ctx.ShouldBindJSON(&challenge); err != nil {
+	id := ctx.Param("id")
+	var req ChallengeResponse
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "update_challenge",
 			"status": "failure",
@@ -117,6 +149,24 @@ func UpdateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
+	var challenge models.Challenge
+	if err := models.DB.Preload("Hints").Preload("StaticConfig").Preload("DynamicConfig").First(&challenge, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Challenge not found"})
+		return
+	}
+	// Update fields
+	challenge.Name = req.Name
+	challenge.Author = req.Author
+	challenge.Desc = req.Desc
+	challenge.Category = req.Category
+	challenge.PointsMin = req.PointsMin
+	challenge.PointsMax = req.PointsMax
+	challenge.Difficulty = req.Difficulty
+	challenge.IsStatic = req.IsStatic
+	challenge.IsVisible = req.IsVisible
+	challenge.StaticConfig = req.StaticConfig
+	challenge.DynamicConfig = req.DynamicConfig
+	challenge.Hints = req.Hints
 
 	if err := models.DB.Save(&challenge).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
@@ -128,14 +178,13 @@ func UpdateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":        "update_challenge",
 		"status":       "success",
 		"challenge_id": challenge.ID,
 		"ip":           ctx.ClientIP(),
 	}).Info("Challenge updated successfully")
-	ctx.JSON(http.StatusOK, challenge)
+	ctx.JSON(http.StatusOK, ToChallengeResponse(challenge))
 }
 
 // DeleteChallenge godoc
@@ -145,26 +194,19 @@ func UpdateChallenge(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        challenge  body      models.Challenge  true  "Challenge object"
-// @Success      200        {object}  successResponse
-// @Failure      400        {object}  types.ErrorResponse
-// @Failure      500        {object}  types.ErrorResponse
-// @Router       /admin/challenge/delete [delete]
+// @Param        id  path      int  true  "Challenge ID"
+// @Success      200  {object}  types.SuccessResponse
+// @Failure      400  {object}  types.ErrorResponse
+// @Failure      500  {object}  types.ErrorResponse
+// @Router       /admin/challenges/{id} [delete]
 func DeleteChallenge(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
+	id := ctx.Param("id")
 	var challenge models.Challenge
-
-	if err := ctx.ShouldBindJSON(&challenge); err != nil {
-		auditLog.WithFields(logrus.Fields{
-			"event":  "delete_challenge",
-			"status": "failure",
-			"reason": "invalid_request",
-			"ip":     ctx.ClientIP(),
-		}).Warn("Invalid request in deleteChallenge")
-		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
+	if err := models.DB.First(&challenge, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Challenge not found"})
 		return
 	}
-
 	if err := models.DB.Delete(&challenge).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "delete_challenge",
@@ -175,12 +217,11 @@ func DeleteChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":        "delete_challenge",
 		"status":       "success",
 		"challenge_id": challenge.ID,
 		"ip":           ctx.ClientIP(),
 	}).Info("Challenge deleted successfully")
-	ctx.JSON(http.StatusOK, gin.H{"message": "Challenge deleted successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Challenge deleted successfully"})
 }

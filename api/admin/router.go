@@ -16,22 +16,25 @@ func LoadUser(r *gin.RouterGroup) {
 	adminRouter.DELETE("/:id", handlers.DeleteAdmin)
 
 	// System controls
-	adminRouter.POST("/cache/flush", handlers.FlushCache)
 	adminRouter.POST("/submissions/close", handlers.CloseChallengeSubmission)
 	adminRouter.POST("/submissions/open", handlers.OpenChallengeSubmission)
 	adminRouter.POST("/auth/login/close", handlers.CloseLogin)
 	adminRouter.POST("/auth/login/open", handlers.OpenLogin)
+	adminRouter.POST("/auth/signup/close", handlers.CloseSignup)
+	adminRouter.POST("/auth/signup/open", handlers.OpenSignup)
 
 	// Challenge management
 	challengeRouter := adminRouter.Group("/challenges")
-	challengeRouter.GET("/", handlers.GetAllChallenges)
+	challengeRouter.GET("/", middleware.CacheMiddleware, handlers.GetAllChallenges)
 	challengeRouter.POST("/", handlers.AddChallenge)
 	challengeRouter.PATCH("/:id", handlers.UpdateChallenge)
 	challengeRouter.DELETE("/:id", handlers.DeleteChallenge)
+	challengeRouter.POST("/:id/visible", handlers.ChallengeVisible)
+	challengeRouter.POST("/:id/not-visible", handlers.ChallengeNotVisible)
 
 	// User management
 	userRouter := adminRouter.Group("/users")
-	userRouter.GET("/", handlers.GetAllUsers)
+	userRouter.GET("/", middleware.CacheMiddleware, handlers.GetAllUsers)
 	userRouter.PATCH("/:id", handlers.UpdateUser)
 	userRouter.DELETE("/:id", handlers.DeleteUser)
 	userRouter.POST("/:id/ban", handlers.BanUser)
@@ -43,7 +46,7 @@ func LoadUser(r *gin.RouterGroup) {
 
 	// Team management
 	teamRouter := adminRouter.Group("/teams")
-	teamRouter.GET("/", handlers.GetAllTeams)
+	teamRouter.GET("/", middleware.CacheMiddleware, handlers.GetAllTeams)
 	teamRouter.PATCH("/:id", handlers.UpdateTeam)
 	teamRouter.DELETE("/:id", handlers.DeleteTeam)
 	teamRouter.POST("/:id/ban", handlers.BanTeam)

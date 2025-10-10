@@ -51,3 +51,7 @@ func Init(config *config.Config) {
 		Prefix:        "ban-history-cache",
 	})
 }
+
+func init() {
+	allowSubmissions.Store(true)
+}

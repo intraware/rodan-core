@@ -1,4 +1,3 @@
-// TODO: admin is vibe coded and I can't fix it now
 package handlers
 
 import (
@@ -285,22 +284,104 @@ func FlushCache(ctx *gin.Context) {
 	}
 }
 
+// CloseChallengeSubmission godoc
+// @Summary      Close challenge submissions
+// @Description  Disables challenge submissions for all users
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} types.SuccessResponse
+// @Router       /admin/submissions/close [post]
 func CloseChallengeSubmission(ctx *gin.Context) {
-	// TODO
+	shared.SetSubmissions(false)
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Submission closed"})
 }
 
+// OpenChallengeSubmission godoc
+// @Summary      Open challenge submissions
+// @Description  Enables challenge submissions for all users
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} types.SuccessResponse
+// @Router       /admin/submissions/open [post]
 func OpenChallengeSubmission(ctx *gin.Context) {
-	// TODO
+	shared.SetSubmissions(true)
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Submission opened"})
 }
 
-func ResetPassword(ctx *gin.Context) {
-	// TODO
-}
+var Auth = AuthService{}
 
+// CloseLogin godoc
+// @Summary      Close login
+// @Description  Disables login for all users
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} types.SuccessResponse
+// @Failure      500  {object} types.ErrorResponse
+// @Router       /admin/auth/login/close [post]
 func CloseLogin(ctx *gin.Context) {
-	// TODO
+	if err := Auth.CloseLogin(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Login closed"})
 }
 
+// OpenLogin godoc
+// @Summary      Open login
+// @Description  Enables login for all users
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} types.SuccessResponse
+// @Failure      500  {object} types.ErrorResponse
+// @Router       /admin/auth/login/open [post]
 func OpenLogin(ctx *gin.Context) {
-	// TODO
+	if err := Auth.OpenLogin(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Login opened"})
+}
+
+// CloseSignup godoc
+// @Summary      Close signup
+// @Description  Disables signups for all users
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} types.SuccessResponse
+// @Failure      500  {object} types.ErrorResponse
+// @Router       /admin/auth/signup/close [post]
+func CloseSignup(ctx *gin.Context) {
+	if err := Auth.CloseSignup(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Signup closed"})
+}
+
+// OpenSignup godoc
+// @Summary      Open signup
+// @Description  Enables signups for all users
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} types.SuccessResponse
+// @Failure      500  {object} types.ErrorResponse
+// @Router       /admin/auth/signup/open [post]
+func OpenSignup(ctx *gin.Context) {
+	if err := Auth.OpenSignup(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Signup opened"})
 }

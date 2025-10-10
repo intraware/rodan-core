@@ -457,8 +457,18 @@ func GetChallengeConfig(ctx *gin.Context) {
 // @Failure      500   {object}  types.ErrorResponse
 // @Router       /challenges/{id}/submit [post]
 func SubmitFlag(ctx *gin.Context) {
-	cfg := values.GetConfig().App
 	auditLog := utils.Logger.WithField("type", "audit")
+	if !shared.GetSubmissions() {
+		auditLog.WithFields(logrus.Fields{
+			"event":  "submit_flag",
+			"status": "failure",
+			"reason": "submission_closed",
+			"ip":     ctx.ClientIP(),
+		}).Warn("Submissions are closed")
+		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Submissions are closed"})
+		return
+	}
+	cfg := values.GetConfig().App
 	challengeIDStr := ctx.Param("id")
 	id, err := strconv.ParseUint(challengeIDStr, 10, 64)
 	if err != nil {

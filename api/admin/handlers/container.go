@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// GetAllContainers godoc
+// GetAllSandboxes godoc
 // @Summary      Get all containers
 // @Description  Retrieves a list of all containers in the system
 // @Security     BearerAuth

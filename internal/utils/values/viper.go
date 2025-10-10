@@ -55,6 +55,10 @@ func InitWithViper(path string) error {
 		hash := sha256.Sum256([]byte(cfg.App.Notification.HTTP.APIKey))
 		cfg.App.Notification.HTTP.HashedAPIKey = hex.EncodeToString(hash[:])
 	}
+	if cfg.App.Auth.URL != "" && cfg.App.Auth.ApiKey != "" {
+		hash := sha256.Sum256([]byte(cfg.App.Auth.ApiKey))
+		cfg.App.Auth.HashedAPIKey = hex.EncodeToString(hash[:])
+	}
 	if err := cfg.Validate(); err != nil {
 		return err
 	}
@@ -67,9 +71,13 @@ func InitWithViper(path string) error {
 			log.Println("[CONFIG] Failed to reload config:", err)
 			return
 		}
-		if cfg.App.Notification.HTTP != nil && cfg.App.Notification.HTTP.APIKey != "" {
-			hash := sha256.Sum256([]byte(cfg.App.Notification.HTTP.APIKey))
-			cfg.App.Notification.HTTP.HashedAPIKey = hex.EncodeToString(hash[:])
+		if newCfg.App.Notification.HTTP != nil && newCfg.App.Notification.HTTP.APIKey != "" {
+			hash := sha256.Sum256([]byte(newCfg.App.Notification.HTTP.APIKey))
+			newCfg.App.Notification.HTTP.HashedAPIKey = hex.EncodeToString(hash[:])
+		}
+		if newCfg.App.Auth.URL != "" && newCfg.App.Auth.ApiKey != "" {
+			hash := sha256.Sum256([]byte(newCfg.App.Auth.ApiKey))
+			newCfg.App.Auth.HashedAPIKey = hex.EncodeToString(hash[:])
 		}
 		if err := newCfg.Validate(); err != nil {
 			log.Println("[CONFIG] Validation failed after reload:", err)

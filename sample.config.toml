@@ -64,10 +64,13 @@ timeout = "10s"
 
 [app.notifications.http]
 url = "http://notification:8000"
-endpoint = "/notifications/send"
+endpoint = "/api/events/ingest"
 api-key = "super-secret-notification-key"
 
-# [app.notifications.kafka]
-# brokers = ["kafka1:9092", "kafka2:9092"]
-# topic = "microservice-notifications"
-# group_id = "rodan-notifications-group"
+[app.auth-service]
+url = "http://server-auth:8000"
+endpoint = "/api/admin"
+api-key = "somethingfortesting123"
+retry-times = 3
+timeout = "10s"
+retry-delay = "5s"

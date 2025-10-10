@@ -58,6 +58,17 @@ type AppConfig struct {
 	Ban           BanConfig          `mapstructure:"ban" reload:"true"`
 	AppCache      CacheConfig        `mapstructure:"cache"`
 	Notification  NotificationConfig `mapstructure:"notifications" reload:"true"`
+	Auth          AuthServiceConfig  `mapstructure:"auth-service" reload:"true"`
+}
+
+type AuthServiceConfig struct {
+	URL          string        `mapstructure:"url" reload:"true"`
+	Endpoint     string        `mapstructure:"endpoint" reload:"true"`
+	ApiKey       string        `mapstructure:"api-key" reload:"true"`
+	HashedAPIKey string        `mapstructure:"-"`
+	DefaultRetry uint          `mapstructure:"retry-times" reload:"true"`
+	Timeout      time.Duration `mapstructure:"timeout" reload:"true"`
+	RetryDelay   time.Duration `mapstructure:"retry-delay" reload:"true"`
 }
 
 type CacheConfig struct {
@@ -88,13 +99,12 @@ type BanConfig struct {
 }
 
 type NotificationConfig struct {
-	Enabled        bool                     `mapstructure:"enabled" reload:"true"`
-	DeliveryMethod string                   `mapstructure:"delivery-method" reload:"true"`
-	DefaultRetry   int                      `mapstructure:"default-retry" reload:"true"`
-	RetryDelay     time.Duration            `mapstructure:"retry-delay" reload:"true"`
-	Timeout        time.Duration            `mapstructure:"timeout" reload:"true"`
-	HTTP           *HTTPNotificationConfig  `mapstructure:"http" reload:"true"`
-	Kafka          *KafkaNotificationConfig `mapstructure:"kafka" reload:"true"`
+	Enabled        bool                    `mapstructure:"enabled" reload:"true"`
+	DeliveryMethod string                  `mapstructure:"delivery-method" reload:"true"`
+	DefaultRetry   int                     `mapstructure:"default-retry" reload:"true"`
+	RetryDelay     time.Duration           `mapstructure:"retry-delay" reload:"true"`
+	Timeout        time.Duration           `mapstructure:"timeout" reload:"true"`
+	HTTP           *HTTPNotificationConfig `mapstructure:"http" reload:"true"`
 }
 
 type HTTPNotificationConfig struct {
@@ -102,12 +112,6 @@ type HTTPNotificationConfig struct {
 	Endpoint     string `mapstructure:"endpoint" reload:"true"`
 	APIKey       string `mapstructure:"api-key" reload:"true"`
 	HashedAPIKey string `mapstructure"-"`
-}
-
-type KafkaNotificationConfig struct {
-	Brokers []string `mapstructure:"brokers" reload:"true"`
-	Topic   string   `mapstructure:"topic" reload:"true"`
-	GroupID string   `mapstructure:"group_id" reload:"true"`
 }
 
 func (cfg *Config) Validate() error {

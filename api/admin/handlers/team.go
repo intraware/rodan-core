@@ -10,6 +10,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func ToTeamResponse(t models.Team) TeamResponse {
+	return TeamResponse{
+		ID:        t.ID,
+		Name:      t.Name,
+		Code:      t.Code,
+		Ban:       t.Ban,
+		Blacklist: t.Blacklist,
+		LeaderID:  t.LeaderID,
+	}
+}
+
 // GetAllTeams godoc
 // @Summary      Get all teams
 // @Description  Retrieves a list of all teams in the system
@@ -17,14 +28,13 @@ import (
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  []models.Team
+// @Success      200  {array}   TeamResponse
 // @Failure      500  {object}  types.ErrorResponse
-// @Router       /admin/team/all [get]
+// @Router       /admin/teams [get]
 func GetAllTeams(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	var teams []models.Team
-
-	if err := models.DB.Find(&teams).Error; err != nil {
+	var teams []TeamResponse
+	if err := models.DB.Table("teams").Find(&teams).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "get_all_teams",
 			"status": "failure",
@@ -34,7 +44,6 @@ func GetAllTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":  "get_all_teams",
 		"status": "success",
@@ -51,16 +60,15 @@ func GetAllTeams(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        team  body      models.Team  true  "Team object"
-// @Success      200   {object}  models.Team
+// @Param        team  body      TeamResponse  true  "Team object"
+// @Success      200   {object}  TeamResponse
 // @Failure      400   {object}  types.ErrorResponse
 // @Failure      500   {object}  types.ErrorResponse
-// @Router       /admin/team/edit [patch]
+// @Router       /admin/teams/{id} [patch]
 func UpdateTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	var team models.Team
-
-	if err := ctx.ShouldBindJSON(&team); err != nil {
+	var req TeamResponse
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "update_team",
 			"status": "failure",
@@ -70,7 +78,16 @@ func UpdateTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
 		return
 	}
-
+	var team models.Team
+	if err := models.DB.First(&team, req.ID).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Team not found"})
+		return
+	}
+	team.Name = req.Name
+	team.Code = req.Code
+	team.Ban = req.Ban
+	team.Blacklist = req.Blacklist
+	team.LeaderID = req.LeaderID
 	if err := models.DB.Save(&team).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "update_team",
@@ -81,14 +98,13 @@ func UpdateTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":   "update_team",
 		"status":  "success",
 		"team_id": team.ID,
 		"ip":      ctx.ClientIP(),
 	}).Info("Team updated successfully")
-	ctx.JSON(http.StatusOK, team)
+	ctx.JSON(http.StatusOK, ToTeamResponse(team))
 }
 
 // DeleteTeam godoc
@@ -98,26 +114,19 @@ func UpdateTeam(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        team  body      models.Team  true  "Team object"
-// @Success      200   {object}  successResponse
+// @Param        id    path      int  true  "Team ID"
+// @Success      200   {object}  types.SuccessResponse
 // @Failure      400   {object}  types.ErrorResponse
 // @Failure      500   {object}  types.ErrorResponse
-// @Router       /admin/team/delete [delete]
+// @Router       /admin/teams/{id} [delete]
 func DeleteTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
+	id := ctx.Param("id")
 	var team models.Team
-
-	if err := ctx.ShouldBindJSON(&team); err != nil {
-		auditLog.WithFields(logrus.Fields{
-			"event":  "delete_team",
-			"status": "failure",
-			"reason": "invalid_request",
-			"ip":     ctx.ClientIP(),
-		}).Warn("Invalid request in deleteTeam")
-		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
+	if err := models.DB.First(&team, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Team not found"})
 		return
 	}
-
 	if err := models.DB.Delete(&team).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "delete_team",
@@ -128,14 +137,13 @@ func DeleteTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":   "delete_team",
 		"status":  "success",
 		"team_id": team.ID,
 		"ip":      ctx.ClientIP(),
 	}).Info("Team deleted successfully")
-	ctx.JSON(http.StatusOK, gin.H{"message": "Team deleted successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Team deleted successfully"})
 }
 
 // BanTeam godoc
@@ -145,27 +153,20 @@ func DeleteTeam(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        team  body      models.Team  true  "Team object"
-// @Success      200   {object}  successResponse
+// @Param        id    path      int  true  "Team ID"
+// @Success      200   {object}  types.SuccessResponse
 // @Failure      400   {object}  types.ErrorResponse
 // @Failure      500   {object}  types.ErrorResponse
-// @Router       /admin/team/ban [post]
+// @Router       /admin/teams/{id}/ban [post]
 func BanTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
+	id := ctx.Param("id")
 	var team models.Team
-
-	if err := ctx.ShouldBindJSON(&team); err != nil {
-		auditLog.WithFields(logrus.Fields{
-			"event":  "ban_team",
-			"status": "failure",
-			"reason": "invalid_request",
-			"ip":     ctx.ClientIP(),
-		}).Warn("Invalid request in banTeam")
-		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
+	if err := models.DB.First(&team, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Team not found"})
 		return
 	}
-
-	if err := models.DB.Model(&team).Where("id = ?", team.ID).Update("ban", true).Error; err != nil {
+	if err := models.DB.Model(&team).Update("ban", true).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "ban_team",
 			"status": "failure",
@@ -175,14 +176,13 @@ func BanTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":   "ban_team",
 		"status":  "success",
 		"team_id": team.ID,
 		"ip":      ctx.ClientIP(),
 	}).Info("Team banned successfully")
-	ctx.JSON(http.StatusOK, gin.H{"message": "Team banned successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Team banned successfully"})
 }
 
 // UnbanTeam godoc
@@ -192,27 +192,20 @@ func BanTeam(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        team  body      models.Team  true  "Team object"
-// @Success      200   {object}  successResponse
+// @Param        id    path      int  true  "Team ID"
+// @Success      200   {object}  types.SuccessResponse
 // @Failure      400   {object}  types.ErrorResponse
 // @Failure      500   {object}  types.ErrorResponse
-// @Router       /admin/team/unban [post]
+// @Router       /admin/teams/{id}/unban [post]
 func UnbanTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
+	id := ctx.Param("id")
 	var team models.Team
-
-	if err := ctx.ShouldBindJSON(&team); err != nil {
-		auditLog.WithFields(logrus.Fields{
-			"event":  "unban_team",
-			"status": "failure",
-			"reason": "invalid_request",
-			"ip":     ctx.ClientIP(),
-		}).Warn("Invalid request in unbanTeam")
-		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
+	if err := models.DB.First(&team, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Team not found"})
 		return
 	}
-
-	if err := models.DB.Model(&team).Where("id = ?", team.ID).Update("ban", false).Error; err != nil {
+	if err := models.DB.Model(&team).Update("ban", false).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "unban_team",
 			"status": "failure",
@@ -222,14 +215,13 @@ func UnbanTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":   "unban_team",
 		"status":  "success",
 		"team_id": team.ID,
 		"ip":      ctx.ClientIP(),
 	}).Info("Team unbanned successfully")
-	ctx.JSON(http.StatusOK, gin.H{"message": "Team unbanned successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Team unbanned successfully"})
 }
 
 // BlacklistTeam godoc
@@ -239,27 +231,20 @@ func UnbanTeam(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        team  body      models.Team  true  "Team object"
-// @Success      200   {object}  successResponse
+// @Param        id    path      int  true  "Team ID"
+// @Success      200   {object}  types.SuccessResponse
 // @Failure      400   {object}  types.ErrorResponse
 // @Failure      500   {object}  types.ErrorResponse
-// @Router       /admin/team/blacklist [post]
+// @Router       /admin/teams/{id}/blacklist [post]
 func BlacklistTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
+	id := ctx.Param("id")
 	var team models.Team
-
-	if err := ctx.ShouldBindJSON(&team); err != nil {
-		auditLog.WithFields(logrus.Fields{
-			"event":  "blacklist_team",
-			"status": "failure",
-			"reason": "invalid_request",
-			"ip":     ctx.ClientIP(),
-		}).Warn("Invalid request in blacklistTeam")
-		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
+	if err := models.DB.First(&team, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Team not found"})
 		return
 	}
-
-	if err := models.DB.Model(&team).Where("id = ?", team.ID).Update("blacklist", true).Error; err != nil {
+	if err := models.DB.Model(&team).Update("blacklist", true).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "blacklist_team",
 			"status": "failure",
@@ -269,14 +254,13 @@ func BlacklistTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":   "blacklist_team",
 		"status":  "success",
 		"team_id": team.ID,
 		"ip":      ctx.ClientIP(),
 	}).Info("Team blacklisted successfully")
-	ctx.JSON(http.StatusOK, gin.H{"message": "Team blacklisted successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Team blacklisted successfully"})
 }
 
 // UnblacklistTeam godoc
@@ -286,27 +270,20 @@ func BlacklistTeam(ctx *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        team  body      models.Team  true  "Team object"
-// @Success      200   {object}  successResponse
+// @Param        id    path      int  true  "Team ID"
+// @Success      200   {object}  types.SuccessResponse
 // @Failure      400   {object}  types.ErrorResponse
 // @Failure      500   {object}  types.ErrorResponse
-// @Router       /admin/team/unblacklist [post]
+// @Router       /admin/teams/{id}/unblacklist [post]
 func UnblacklistTeam(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
+	id := ctx.Param("id")
 	var team models.Team
-
-	if err := ctx.ShouldBindJSON(&team); err != nil {
-		auditLog.WithFields(logrus.Fields{
-			"event":  "unblacklist_team",
-			"status": "failure",
-			"reason": "invalid_request",
-			"ip":     ctx.ClientIP(),
-		}).Warn("Invalid request in unblacklistTeam")
-		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid request"})
+	if err := models.DB.First(&team, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Team not found"})
 		return
 	}
-
-	if err := models.DB.Model(&team).Where("id = ?", team.ID).Update("blacklist", false).Error; err != nil {
+	if err := models.DB.Model(&team).Update("blacklist", false).Error; err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "unblacklist_team",
 			"status": "failure",
@@ -316,12 +293,11 @@ func UnblacklistTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
 		return
 	}
-
 	auditLog.WithFields(logrus.Fields{
 		"event":   "unblacklist_team",
 		"status":  "success",
 		"team_id": team.ID,
 		"ip":      ctx.ClientIP(),
 	}).Info("Team unblacklisted successfully")
-	ctx.JSON(http.StatusOK, gin.H{"message": "Team unblacklisted successfully"})
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Team unblacklisted successfully"})
 }
