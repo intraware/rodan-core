@@ -53,7 +53,7 @@ func LoadUser(r *gin.RouterGroup) {
 
 	// Container management
 	containerRouter := adminRouter.Group("/containers")
-	containerRouter.GET("/", handlers.GetAllContainers)
+	containerRouter.GET("/", handlers.GetAllSandboxes)
 	containerRouter.DELETE("/:id/stop", handlers.StopContainer)
 	containerRouter.DELETE("/teams/:id/stop", handlers.StopTeamContainer)
 	containerRouter.DELETE("/challenges/:id/stop", handlers.StopChallengeContainer)

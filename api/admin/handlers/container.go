@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/intraware/rodan/api/shared"
-	"github.com/intraware/rodan/internal/sandbox"
 	"github.com/intraware/rodan/internal/types"
 	"github.com/intraware/rodan/internal/utils"
+	"github.com/intraware/rodan/internal/utils/docker"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,22 +23,7 @@ import (
 // @Failure      500  {object}  types.ErrorResponse
 // @Router       /admin/sandbox/all [get]
 func GetAllSandboxes(ctx *gin.Context) {
-	auditLog := utils.Logger.WithField("type", "audit")
-	var boxes []sandbox.SandBox
-	for _, v := range shared.SandBoxMap {
-		boxes = append(boxes, *v)
-	}
-	if err != nil {
-		auditLog.WithFields(logrus.Fields{
-			"event":  "get_all_containers",
-			"status": "failure",
-			"reason": "internal_error",
-			"ip":     ctx.ClientIP(),
-		}).Error("Failed to get all containers")
-		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to get all containers"})
-		return
-	}
-	ctx.JSON(http.StatusOK, containers)
+	ctx.JSON(http.StatusOK, shared.SandBoxMap.DumpValues())
 }
 
 // StopAllContainers godoc
@@ -52,8 +38,8 @@ func GetAllSandboxes(ctx *gin.Context) {
 // @Router       /admin/container/stop_all [delete]
 func StopAllContainers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	container := sandbox.Container{}
-	if err := container.StopAll(); err != nil {
+
+	if err := docker.StopAllContainers(ctx); err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "stop_all_containers",
 			"status": "failure",
@@ -83,8 +69,7 @@ func StopAllContainers(ctx *gin.Context) {
 // @Router       /admin/container/kill_all [post]
 func KillAllContainers(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	container := sandbox.Container{}
-	if err := container.KillAll(); err != nil {
+	if err := docker.KillAllContainers(ctx); err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":  "kill_all_containers",
 			"status": "failure",
@@ -116,8 +101,8 @@ func KillAllContainers(ctx *gin.Context) {
 func StopContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	containerID := ctx.Param("id")
-	container := sandbox.Container{}
-	if err := container.Stop(containerID); err != nil {
+	// TODO: should we remove the sandbox from the map as well?
+	if err := docker.StopContainer(ctx, containerID); err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":        "stop_container",
 			"status":       "failure",
@@ -150,9 +135,17 @@ func StopContainer(ctx *gin.Context) {
 // @Router       /admin/container/stop_team [delete]
 func StopTeamContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
-	teamID := ctx.Param("id")
-	container := sandbox.Container{}
-	if err := container.StopTeam(teamID); err != nil {
+	teamID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil || teamID <= 0 {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Invalid team ID"})
+		return
+	}
+	sandbox, ok := shared.SandBoxMap.Get(uint(teamID))
+	if !ok {
+		ctx.JSON(http.StatusNotFound, types.ErrorResponse{Error: "No active sandbox found for the specified team"})
+		return
+	}
+	if err := sandbox.Stop(); err != nil {
 		auditLog.WithFields(logrus.Fields{
 			"event":   "stop_team_container",
 			"status":  "failure",
@@ -186,18 +179,21 @@ func StopTeamContainer(ctx *gin.Context) {
 func StopChallengeContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	challengeID := ctx.Param("id")
-	container := sandbox.Container{}
-	if err := container.StopChallenge(challengeID); err != nil {
-		auditLog.WithFields(logrus.Fields{
-			"event":        "stop_challenge_container",
-			"status":       "failure",
-			"reason":       "internal_error",
-			"challenge_id": challengeID,
-			"ip":           ctx.ClientIP(),
-		}).Error("Failed to stop challenge container")
-		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to stop challenge container"})
-		return
-	}
+	// container := sandbox.Container{}
+
+	// TODO: challenge container???????
+
+	// if err := container.StopChallenge(challengeID); err != nil {
+	// 	auditLog.WithFields(logrus.Fields{
+	// 		"event":        "stop_challenge_container",
+	// 		"status":       "failure",
+	// 		"reason":       "internal_error",
+	// 		"challenge_id": challengeID,
+	// 		"ip":           ctx.ClientIP(),
+	// 	}).Error("Failed to stop challenge container")
+	// 	ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Failed to stop challenge container"})
+	// 	return
+	// }
 	auditLog.WithFields(logrus.Fields{
 		"event":        "stop_challenge_container",
 		"status":       "success",

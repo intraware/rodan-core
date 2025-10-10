@@ -359,7 +359,7 @@ func GetChallengeConfig(ctx *gin.Context) {
 			"ip":                ctx.ClientIP(),
 		}).Info("Fetched static challenge config successfully")
 	} else {
-		challengeSandbox, ok := shared.SandBoxMap[*user.TeamID]
+		challengeSandbox, ok := shared.SandBoxMap.Get(*user.TeamID)
 		if !ok {
 			auditLog.WithFields(logrus.Fields{
 				"event":         "get_challenge_config",
@@ -689,14 +689,15 @@ func SubmitFlag(ctx *gin.Context) {
 		} else {
 			shared.BanHistoryCache.Set(key, ban)
 			var sandboxes []*sandbox.SandBox
+			rawSandBoxes := shared.SandBoxMap.DumpValues()
 			if cfg.Ban.UserBan {
-				for _, sandbox := range shared.SandBoxMap {
+				for _, sandbox := range rawSandBoxes {
 					if sandbox.UserID == *ban.UserID {
 						sandboxes = append(sandboxes, sandbox)
 					}
 				}
 			} else if cfg.Ban.TeamBan {
-				for _, sandbox := range shared.SandBoxMap {
+				for _, sandbox := range rawSandBoxes {
 					if sandbox.TeamID == *ban.TeamID {
 						sandboxes = append(sandboxes, sandbox)
 					}

@@ -106,6 +106,32 @@ func ListContainers(ctx context.Context) ([]container.Summary, error) {
 	return containers, nil
 }
 
+func StopAllContainers(ctx context.Context) (err error) {
+	containers, err := ListContainers(ctx)
+	if err != nil {
+		return
+	}
+	for _, ctr := range containers {
+		if err = StopContainer(ctx, ctr.ID); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func KillAllContainers(ctx context.Context) (err error) {
+	containers, err := ListContainers(ctx)
+	if err != nil {
+		return
+	}
+	for _, ctr := range containers {
+		if err = dockerClient.ContainerKill(ctx, ctr.ID, "SIGKILL"); err != nil {
+			return
+		}
+	}
+	return
+}
+
 func RunCommand(ctx context.Context, containerID, command string) (err error) {
 	cmd := strings.Fields(command)
 	if len(cmd) == 0 {
