@@ -185,11 +185,11 @@ func StartDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Invalid Docker Image is added to the list"})
 		return
 	}
-	challengeSandbox, ok := shared.SandBoxMap[*user.TeamID]
+	challengeSandbox, ok := shared.SandBoxMap.Get(*user.TeamID)
 	if !ok {
 		flag := generateHashedFlag(challengeID, *user.TeamID)
 		challengeSandbox = sandbox.NewSandBox(userID, *user.TeamID, &challenge, flag)
-		shared.SandBoxMap[*user.TeamID] = challengeSandbox
+		shared.SandBoxMap.Set(*user.TeamID, challengeSandbox)
 	}
 	if challengeSandbox.Active {
 		auditLog.WithFields(logrus.Fields{
@@ -343,7 +343,7 @@ func StopDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Static challenges cannot spawn dynamic containers."})
 		return
 	}
-	challengeSandbox, ok := shared.SandBoxMap[*user.TeamID]
+	challengeSandbox, ok := shared.SandBoxMap.Get(*user.TeamID)
 	if !ok {
 		auditLog.WithFields(logrus.Fields{
 			"event":         "stop_dynamic_challenge",
@@ -544,7 +544,7 @@ func ExtendDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Static challenges cannot spawn dynamic containers."})
 		return
 	}
-	challengeSandbox, ok := shared.SandBoxMap[*user.TeamID]
+	challengeSandbox, ok := shared.SandBoxMap.Get(*user.TeamID)
 	if !ok {
 		auditLog.WithFields(logrus.Fields{
 			"event":         "extend_dynamic_challenge",
@@ -683,7 +683,7 @@ func RegenerateDynamicChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, types.ErrorResponse{Error: "Static challenges cannot spawn dynamic containers."})
 		return
 	}
-	challengeSandbox, ok := shared.SandBoxMap[*user.TeamID]
+	challengeSandbox, ok := shared.SandBoxMap.Get(*user.TeamID)
 	if !ok {
 		auditLog.WithFields(logrus.Fields{
 			"event":         "regenerate_dynamic_challenge",
