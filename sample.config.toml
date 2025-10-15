@@ -7,6 +7,7 @@ cors-url = ["*"]
 [server.security]
 jwt-secret = "testing1234555"
 flag-secret = "super-secret-flag-key"
+admin-jwt-secret = "aadmin000testing"
 
 [docker]
 socket-url = "unix:///var/run/docker.sock" 

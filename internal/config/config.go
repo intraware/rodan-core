@@ -21,8 +21,9 @@ type ServerConfig struct {
 }
 
 type SecurityConfig struct {
-	JWTSecret  string `mapstructure:"jwt-secret" reload:"true"`
-	FlagSecret string `mapstructure:"flag-secret" reload:"true"`
+	JWTSecret  		string `mapstructure:"jwt-secret" reload:"true"`
+	FlagSecret 		string `mapstructure:"flag-secret" reload:"true"`
+	AdminJWTSecret string `mapstructure:"admin-jwt-secret" reload:"true"`
 }
 
 type DockerConfig struct {
