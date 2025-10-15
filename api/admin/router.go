@@ -12,8 +12,8 @@ func LoadUser(r *gin.RouterGroup) {
 	// Admin management
 	adminRouter.GET("/me", handlers.GetAdmin)
 	adminRouter.POST("/", handlers.AddAdmin)
-	adminRouter.PATCH("/:id", handlers.UpdateAdmin)
-	adminRouter.DELETE("/:id", handlers.DeleteAdmin)
+	adminRouter.PATCH("/", handlers.UpdateAdmin)
+	adminRouter.DELETE("/", handlers.DeleteAdmin)
 
 	// System controls
 	adminRouter.POST("/submissions/close", handlers.CloseChallengeSubmission)
@@ -22,6 +22,7 @@ func LoadUser(r *gin.RouterGroup) {
 	adminRouter.POST("/auth/login/open", handlers.OpenLogin)
 	adminRouter.POST("/auth/signup/close", handlers.CloseSignup)
 	adminRouter.POST("/auth/signup/open", handlers.OpenSignup)
+	adminRouter.POST("/flush-cache", handlers.FlushCache)
 
 	// Challenge management
 	challengeRouter := adminRouter.Group("/challenges")
