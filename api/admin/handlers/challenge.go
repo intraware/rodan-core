@@ -225,3 +225,83 @@ func DeleteChallenge(ctx *gin.Context) {
 	}).Info("Challenge deleted successfully")
 	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Challenge deleted successfully"})
 }
+
+// ChallengeVisible godoc
+// @Summary      Make a challenge visible
+// @Description  Sets a challenge's visibility to true
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  types.SuccessResponse
+// @Failure      400  {object}  types.ErrorResponse
+// @Failure      500  {object}  types.ErrorResponse
+// @Router       /admin/challenges/{id}/visible [post]
+func ChallengeVisible(ctx *gin.Context) {
+	auditLog := utils.Logger.WithField("type", "audit")
+	id := ctx.Param("id")
+	var challenge models.Challenge
+	if err := models.DB.First(&challenge, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Challenge not found"})
+		return
+	}
+	challenge.IsVisible = true
+	if err := models.DB.Save(&challenge).Error; err != nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":  "make_challenge_visible",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
+		}).Error("Database error in makeChallengeVisible")
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
+		return
+	}
+	auditLog.WithFields(logrus.Fields{
+		"event":        "make_challenge_visible",
+		"status":       "success",
+		"challenge_id": challenge.ID,
+		"ip":           ctx.ClientIP(),
+	}).Info("Challenge made visible successfully")
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Challenge is now visible"})
+}
+
+// ChallengeNotVisible godoc
+// @Summary      Make a challenge not visible
+// @Description  Sets a challenge's visibility to false
+// @Security     BearerAuth
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Challenge ID"
+// @Success      200  {object}  types.SuccessResponse
+// @Failure      400  {object}  types.ErrorResponse
+// @Failure      500  {object}  types.ErrorResponse
+// @Router       /admin/challenges/{id}/not-visible [post]
+func ChallengeNotVisible(ctx *gin.Context) {
+	auditLog := utils.Logger.WithField("type", "audit")
+	id := ctx.Param("id")
+	var challenge models.Challenge
+	if err := models.DB.First(&challenge, id).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "Challenge not found"})
+		return
+	}
+	challenge.IsVisible = false
+	if err := models.DB.Save(&challenge).Error; err != nil {
+		auditLog.WithFields(logrus.Fields{
+			"event":  "make_challenge_not_visible",
+			"status": "failure",
+			"reason": "database_error",
+			"ip":     ctx.ClientIP(),
+		}).Error("Database error in makeChallengeNotVisible")
+		ctx.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: "Database error"})
+		return
+	}
+	auditLog.WithFields(logrus.Fields{
+		"event":        "make_challenge_not_visible",
+		"status":       "success",
+		"challenge_id": challenge.ID,
+		"ip":           ctx.ClientIP(),
+	}).Info("Challenge made not visible successfully")
+	ctx.JSON(http.StatusOK, types.SuccessResponse{Message: "Challenge is now not visible"})
+}

@@ -179,7 +179,6 @@ func StopTeamContainer(ctx *gin.Context) {
 func StopChallengeContainer(ctx *gin.Context) {
 	auditLog := utils.Logger.WithField("type", "audit")
 	challengeID := ctx.Param("id")
-	// container := sandbox.Container{}
 
 	// TODO: challenge container???????
 
